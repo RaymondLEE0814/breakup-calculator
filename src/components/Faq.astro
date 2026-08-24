@@ -1,0 +1,20 @@
+---
+interface Props {
+  items: Array<{ q: string; a: string }>;
+}
+
+const { items } = Astro.props;
+---
+
+{/* Rendered as real text, not a script-driven accordion: the FAQPage schema
+    may only mark up what a visitor can actually read on the page. */}
+<dl class="mt-6">
+  {
+    items.map((item) => (
+      <div class="border-t border-rule-soft py-5 first:border-t-0 first:pt-0">
+        <dt class="text-[0.9375rem] font-semibold">{item.q}</dt>
+        <dd class="mt-2 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-soft">{item.a}</dd>
+      </div>
+    ))
+  }
+</dl>

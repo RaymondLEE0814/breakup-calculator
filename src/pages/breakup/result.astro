@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import Result from '../../components/Result.astro';
+import NextLink from '../../components/NextLink.astro';
+import { breakup } from '../../lib/calc';
+---
+
+<Base
+  title="헤어질 확률 계산기 결과"
+  description="답변을 바탕으로 계산한 관계 위험 지수와, 지수를 끌어올린 요인들입니다."
+  path="/breakup/result"
+  noindex
+>
+  <Result config={breakup}>
+    <Fragment slot="next">
+      <NextLink
+        href="/divorce"
+        eyebrow="다른 계산기"
+        title="이혼 확률 계산기"
+        blurb="결혼을 앞두고 있거나 이미 함께 살고 있다면, 부부용 문항이 더 잘 맞습니다."
+      />
+      <NextLink
+        href="/guide/signs-of-breakup"
+        eyebrow="가이드"
+        title="헤어지는 커플의 7가지 신호"
+        blurb="결과에 나온 요인들이 왜 위험 신호로 꼽히는지 정리했습니다."
+      />
+      <NextLink
+        href="/guide/gwontaegi"
+        eyebrow="가이드"
+        title="권태기, 끝의 신호일까 과정일까"
+        blurb="대화와 애정 표현이 줄었다는 결과를 받으셨다면."
+      />
+    </Fragment>
+  </Result>
+</Base>

@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import Result from '../../components/Result.astro';
+import NextLink from '../../components/NextLink.astro';
+import { twilight } from '../../lib/calc';
+---
+
+<Base
+  title="황혼 이혼 계산기 결과"
+  description="답변을 바탕으로 계산한 황혼 부부 관계 위험 지수와, 지수를 끌어올린 요인들입니다."
+  path="/twilight/result"
+  noindex
+>
+  <Result config={twilight}>
+    <Fragment slot="next">
+      <NextLink
+        href="/guide/twilight-divorce"
+        eyebrow="가이드"
+        title="황혼이혼은 왜 늘어날까"
+        blurb="자녀 독립과 은퇴 이후 부부에게 실제로 일어나는 변화."
+      />
+      <NextLink
+        href="/guide/four-horsemen"
+        eyebrow="가이드"
+        title="이혼을 예측하는 4가지 대화 습관"
+        blurb="오래된 부부일수록 말투는 습관이 되어 있습니다."
+      />
+      <NextLink
+        href="/divorce"
+        eyebrow="다른 계산기"
+        title="이혼 확률 계산기"
+        blurb="아직 은퇴 전이라면 이쪽 문항이 더 잘 맞습니다."
+      />
+    </Fragment>
+  </Result>
+</Base>

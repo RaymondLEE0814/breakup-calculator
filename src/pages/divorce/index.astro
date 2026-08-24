@@ -1,0 +1,61 @@
+---
+import Base from '../../layouts/Base.astro';
+import CalculatorScreen from '../../components/CalculatorScreen.astro';
+import { divorce } from '../../lib/calc';
+import { breadcrumbLd, faqLd, webAppLd } from '../../lib/site';
+
+const title = '이혼 확률 계산기 — 우리 부부, 지금 괜찮을까 | 무료 자가진단';
+const description =
+  '말수가 줄고 같은 문제로 반복해서 부딪히고 있다면. 18개 질문으로 부부의 대화 방식, 경제와 살림, 신뢰를 짚어 이혼 위험 신호를 담담하게 정리해 드립니다. 무료, 회원가입 없음.';
+
+const faq = [
+  {
+    q: '이혼 확률 계산기의 결과는 통계적 확률인가요?',
+    a: '아닙니다. 관계 연구에서 위험 신호로 알려진 항목들을 점수화한 위험 지수입니다. 실제 이혼율을 추정한 값이 아니며, 지수가 높다고 이혼이 예정된 것도 아닙니다.',
+  },
+  {
+    q: '무엇이 가장 크게 반영되나요?',
+    a: '부부의 대화 방식이 전체의 45%로 가장 큽니다. 다툼이 사건이 아니라 사람을 향해 흐르는지, 비아냥과 한숨이 오가는지, 갈등 뒤 침묵이 며칠씩 이어지는지가 핵심 항목입니다. 경제와 살림은 25%로 그다음입니다.',
+  },
+  {
+    q: '경제 문제는 어떻게 반영되나요?',
+    a: '소득의 크기는 묻지 않습니다. 벌이가 안정적인지, 서로의 기대와 어긋나 반복해서 갈등하는지, 돈 관리가 투명한지, 몰랐던 빚이 있었는지를 묻습니다. 액수가 아니라 다루는 방식이 관계에 작용하기 때문입니다.',
+  },
+  {
+    q: '시가·처가 갈등도 점수에 들어가나요?',
+    a: '들어갑니다. 다만 가장 높은 배점은 갈등의 존재가 아니라, 갈등이 생겼을 때 배우자가 내 편에 서지 않는다고 느끼는 경우에 붙습니다.',
+  },
+  {
+    q: '결과가 높게 나왔습니다. 어떻게 해야 하나요?',
+    a: '결과 화면에 지수를 가장 많이 끌어올린 세 가지 요인과, 각각에 대해 이번 주에 시도해 볼 수 있는 일이 함께 표시됩니다. 지수가 68% 이상이라면 부부 상담을 진지하게 고려해 보시길 권합니다.',
+  },
+];
+
+const reading = [
+  {
+    href: '/guide/four-horsemen',
+    title: '이혼을 예측하는 4가지 대화 습관',
+    blurb: '비난, 경멸, 방어, 담쌓기 — 관계 연구가 지목한 네 가지.',
+  },
+  {
+    href: '/guide/divorce-reasons-korea',
+    title: '한국 부부는 왜 이혼할까',
+    blurb: '통계로 보는 이혼 사유와, 통계가 말해주지 않는 것.',
+  },
+];
+
+const schemas = [
+  webAppLd({ name: divorce.name, path: '/divorce', description }),
+  faqLd(faq),
+  breadcrumbLd([
+    { name: '홈', path: '/' },
+    { name: '이혼 확률 계산기', path: '/divorce' },
+  ]),
+];
+---
+
+<Base title={title} description={description} path="/divorce" og="/og/divorce.png" schemas={schemas}>
+  <div class="pt-12 pb-8 sm:pt-16">
+    <CalculatorScreen config={divorce} faq={faq} reading={reading} />
+  </div>
+</Base>

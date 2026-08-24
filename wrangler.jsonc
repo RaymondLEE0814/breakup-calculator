@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // The subdomain is dedicated to this service, so the custom-domain binding
+  // takes the whole hostname.
+  "name": "love-mycarebom",
+  "compatibility_date": "2026-08-01",
+
+  // Static assets are served by the platform without invoking the Worker.
+  // The script below only runs for paths that have no file — shared-result
+  // links and real 404s. See worker/index.js.
+  "main": "./worker/index.js",
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Every internal link is written without a trailing slash, so serve
+    // /breakup straight from /breakup/index.html instead of redirecting to
+    // /breakup/ first. One less hop on every navigation.
+    "html_handling": "drop-trailing-slash",
+    // Hand unmatched paths to the Worker rather than guessing at a rewrite.
+    "not_found_handling": "none"
+  },
+
+  "routes": [
+    { "pattern": "love.mycarebom.com", "custom_domain": true }
+  ]
+}

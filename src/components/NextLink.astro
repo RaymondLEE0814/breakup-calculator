@@ -1,0 +1,16 @@
+---
+interface Props {
+  href: string;
+  eyebrow: string;
+  title: string;
+  blurb: string;
+}
+
+const { href, eyebrow, title, blurb } = Astro.props;
+---
+
+<a href={href} class="group flex flex-col gap-1 border-b border-rule-soft py-4 last:border-b-0">
+  <span class="gutter-label">{eyebrow}</span>
+  <span class="mt-1 text-[0.9375rem] transition-colors group-hover:text-clay">{title}</span>
+  <span class="text-[0.875rem] text-ink-faint">{blurb}</span>
+</a>

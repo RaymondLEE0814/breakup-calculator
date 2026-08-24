@@ -1,0 +1,45 @@
+---
+const nav = [
+  { href: '/breakup', label: '연인' },
+  { href: '/divorce', label: '부부' },
+  { href: '/twilight', label: '황혼' },
+  { href: '/guide', label: '가이드' },
+];
+
+const here = Astro.url.pathname;
+const isActive = (href: string) => here === href || here.startsWith(`${href}/`);
+---
+
+<header class="border-b border-rule-soft">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+    <a href="/" class="group flex items-baseline gap-2">
+      <span class="font-serif text-[1.0625rem] font-bold tracking-tight">헤어질 확률 계산기</span>
+      <span class="hidden text-[0.6875rem] tracking-[0.14em] text-ink-faint sm:inline">
+        RELATIONSHIP RISK
+      </span>
+    </a>
+    <nav aria-label="주요 메뉴">
+      <ul class="flex items-center gap-1 text-[0.8125rem] sm:gap-2">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class:list={[
+                  'rounded-sm px-2 py-1.5 transition-colors hover:text-ink',
+                  isActive(item.href) ? 'text-ink' : 'text-ink-soft',
+                ]}
+              >
+                {item.label}
+                {isActive(item.href) && (
+                  <span class="mt-0.5 block h-px w-full bg-clay" aria-hidden="true" />
+                )}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>

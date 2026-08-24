@@ -1,0 +1,183 @@
+@import "tailwindcss";
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+
+/*
+  Quiet-print aesthetic. The subject matter is other people's relationships, so
+  nothing here shouts: warm paper, ink, hairline rules, one clay accent used
+  sparingly, and a Korean serif reserved for headlines and the result numeral.
+*/
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+  --font-serif: "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
+
+  --color-paper: #f7f5f1;
+  --color-paper-raised: #fffdfa;
+  --color-ink: #191714;
+  --color-ink-soft: #57514a;
+  --color-ink-faint: #8c847a;
+  --color-rule: #ddd7cd;
+  --color-rule-soft: #eae5dc;
+
+  --color-clay: #a8523c;
+  --color-clay-soft: #c9836f;
+  --color-sage: #55704f;
+  --color-amber: #a3762b;
+
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.15;
+  --text-display--letter-spacing: -0.02em;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* Paper grain. Two stops of near-invisible noise keep large flat areas from
+       reading as flat screen-white without costing an image request. */
+    background-image:
+      radial-gradient(circle at 18% 12%, rgb(168 82 60 / 0.035), transparent 42%),
+      radial-gradient(circle at 82% 78%, rgb(85 112 79 / 0.03), transparent 46%);
+    background-attachment: fixed;
+    font-family: var(--font-sans);
+    line-height: 1.75;
+    letter-spacing: -0.005em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: rgb(168 82 60 / 0.18);
+  }
+}
+
+@layer components {
+  /* A margin note: the small numeral or label that sits in the left gutter of
+     a section, the way a print edition marks its sections. */
+  .gutter-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rule {
+    border-top: 1px solid var(--color-rule);
+  }
+
+  .prose-quiet {
+    max-width: 68ch;
+  }
+
+  .prose-quiet p {
+    margin-block: 1.15em;
+    color: var(--color-ink-soft);
+  }
+
+  .prose-quiet h2 {
+    margin-block: 2.4em 0.8em;
+    font-size: 1.5rem;
+  }
+
+  .prose-quiet h3 {
+    margin-block: 1.9em 0.6em;
+    font-size: 1.175rem;
+  }
+
+  .prose-quiet ul {
+    margin-block: 1.15em;
+    padding-left: 1.1em;
+    list-style: none;
+    color: var(--color-ink-soft);
+  }
+
+  .prose-quiet li {
+    position: relative;
+    margin-block: 0.5em;
+  }
+
+  .prose-quiet li::before {
+    /* A middot, not a dash: list items often start with an em dash of their
+       own, and two dashes in a row read as a typo. */
+    content: "·";
+    position: absolute;
+    left: -1.1em;
+    color: var(--color-ink-faint);
+  }
+
+  .prose-quiet strong {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .prose-quiet a {
+    color: var(--color-clay);
+    text-underline-offset: 3px;
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+  }
+}
+
+@layer utilities {
+  .nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Load-in: a single staggered settle, never a bounce. */
+  .settle {
+    animation: settle 0.62s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @layer base {
+    :root {
+      --color-paper: #16140f;
+      --color-paper-raised: #1e1b16;
+      --color-ink: #f2ece2;
+      --color-ink-soft: #b4aa9c;
+      --color-ink-faint: #857c6f;
+      --color-rule: #332e26;
+      --color-rule-soft: #262119;
+      --color-clay: #d98e77;
+      --color-clay-soft: #b06a53;
+      --color-sage: #8fae87;
+      --color-amber: #d0a95c;
+    }
+  }
+}

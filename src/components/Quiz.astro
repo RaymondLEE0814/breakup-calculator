@@ -1,0 +1,262 @@
+---
+import type { CalcConfig } from '../lib/calc/types';
+
+interface Props {
+  config: CalcConfig;
+}
+
+const { config } = Astro.props;
+const total = config.questions.length;
+---
+
+<div
+  id="quiz"
+  data-calc={config.type}
+  class="mx-auto max-w-2xl px-5 pb-8 sm:px-8"
+  aria-live="polite"
+>
+  {/* Intro. Server-rendered so the first paint needs no JavaScript, and so a
+      crawler sees real copy rather than an empty mount point. */}
+  <div id="quiz-intro">
+    <p class="gutter-label">{config.name.toUpperCase()}</p>
+    <h1 class="mt-4 text-[2rem] leading-tight sm:text-[2.5rem]">{config.title}</h1>
+    <p class="mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">{config.intro}</p>
+
+    <form id="quiz-start" class="mt-10 border-t border-rule pt-8">
+      <fieldset>
+        <legend class="text-[0.9375rem] font-semibold">어느 쪽 입장에서 답하시나요?</legend>
+        <p class="mt-1.5 text-[0.8125rem] text-ink-faint">
+          선택은 질문에 쓰이는 호칭에만 반영되며, 점수는 어느 쪽을 고르셔도 동일합니다.
+        </p>
+        <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+          {
+            [
+              { value: 'm', label: '남성입니다' },
+              { value: 'f', label: '여성입니다' },
+              { value: 'na', label: '밝히지 않을래요' },
+            ].map((option, i) => (
+              <label class="flex flex-1 cursor-pointer items-center gap-2.5 border border-rule px-4 py-3 text-[0.9375rem] transition-colors hover:border-clay has-checked:border-clay has-checked:bg-paper-raised">
+                <input
+                  type="radio"
+                  name="perspective"
+                  value={option.value}
+                  checked={i === 2}
+                  class="accent-clay"
+                />
+                {option.label}
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <button
+        type="submit"
+        class="mt-8 w-full bg-ink px-6 py-3.5 text-[0.9375rem] font-semibold text-paper transition-opacity hover:opacity-88 sm:w-auto"
+      >
+        {total}개 질문 시작하기
+      </button>
+      <p class="mt-4 text-[0.8125rem] text-ink-faint">
+        답변은 이 기기 안에서만 처리되며, 저장 버튼을 누르시기 전에는 어디에도 전송되지 않습니다.
+      </p>
+    </form>
+
+    <noscript>
+      <p class="mt-6 border border-rule bg-paper-raised p-4 text-[0.875rem] text-ink-soft">
+        이 계산기는 브라우저 안에서 직접 계산합니다. 자바스크립트를 켜시면 바로 이용하실 수 있습니다.
+      </p>
+    </noscript>
+  </div>
+
+  {/* Question stage, filled in by the script below. */}
+  <div id="quiz-stage" hidden>
+    <div class="flex items-center justify-between gap-4 pt-2">
+      <p id="quiz-step" class="gutter-label"></p>
+      <p id="quiz-count" class="gutter-label nums"></p>
+    </div>
+    <div class="mt-3 h-0.5 w-full bg-rule-soft" role="presentation">
+      <div
+        id="quiz-bar"
+        class="h-0.5 bg-clay transition-[width] duration-300 ease-out"
+        style="width:0%"
+      >
+      </div>
+    </div>
+
+    <h2 id="quiz-question" class="mt-9 text-[1.375rem] leading-snug sm:text-[1.5rem]"></h2>
+    <p id="quiz-caption" class="mt-2 text-[0.8125rem] text-ink-faint"></p>
+
+    <div id="quiz-choices" class="mt-7 flex flex-col gap-2" role="radiogroup"></div>
+
+    <div class="mt-8 flex items-center justify-between border-t border-rule-soft pt-5">
+      <button
+        type="button"
+        id="quiz-back"
+        class="text-[0.875rem] text-ink-soft transition-colors hover:text-ink"
+      >
+        ← 이전
+      </button>
+      <button
+        type="button"
+        id="quiz-restart"
+        class="text-[0.875rem] text-ink-faint transition-colors hover:text-ink"
+      >
+        처음부터
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { CONFIGS } from '../lib/calc';
+  import { withPronoun } from '../lib/calc/engine';
+  import type { AnswerMap, CalcType, Perspective } from '../lib/calc/types';
+  import { loadSession, saveSession, clearSession } from '../lib/storage';
+
+  const root = document.getElementById('quiz');
+  if (root) {
+    const type = root.dataset.calc as CalcType;
+    const config = CONFIGS[type];
+
+    const intro = document.getElementById('quiz-intro')!;
+    const stage = document.getElementById('quiz-stage')!;
+    const stepEl = document.getElementById('quiz-step')!;
+    const countEl = document.getElementById('quiz-count')!;
+    const barEl = document.getElementById('quiz-bar')!;
+    const questionEl = document.getElementById('quiz-question')!;
+    const captionEl = document.getElementById('quiz-caption')!;
+    const choicesEl = document.getElementById('quiz-choices')!;
+    const backBtn = document.getElementById('quiz-back') as HTMLButtonElement;
+    const restartBtn = document.getElementById('quiz-restart')!;
+    const startForm = document.getElementById('quiz-start') as HTMLFormElement;
+
+    let perspective: Perspective = 'na';
+    let answers: AnswerMap = {};
+    let cursor = 0;
+    /** Blocks a second click while the auto-advance animation runs. */
+    let locked = false;
+
+    function render() {
+      const q = config.questions[cursor];
+      const step = config.steps[q.step - 1];
+
+      stepEl.textContent = `STEP ${q.step} · ${step.title}`;
+      countEl.textContent = `${cursor + 1} / ${config.questions.length}`;
+      barEl.style.width = `${((cursor + 1) / config.questions.length) * 100}%`;
+      questionEl.textContent = withPronoun(q.text, config, perspective);
+      captionEl.textContent = step.caption;
+      backBtn.disabled = cursor === 0;
+      backBtn.classList.toggle('invisible', cursor === 0);
+
+      choicesEl.innerHTML = '';
+      q.choices.forEach((choice, i) => {
+        const selected = answers[q.id] === i;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.role = 'radio';
+        btn.ariaChecked = String(selected);
+        btn.className = [
+          'settle w-full border px-4 py-3.5 text-left text-[0.9375rem] leading-snug transition-colors',
+          selected
+            ? 'border-clay bg-paper-raised text-ink'
+            : 'border-rule text-ink-soft hover:border-clay hover:text-ink',
+        ].join(' ');
+        btn.style.animationDelay = `${i * 45}ms`;
+        btn.textContent = withPronoun(choice.label, config, perspective);
+        btn.addEventListener('click', () => pick(i));
+        choicesEl.appendChild(btn);
+      });
+
+      // Move focus to the question so a screen reader announces the new screen
+      // instead of silently swapping the buttons underneath the cursor.
+      questionEl.setAttribute('tabindex', '-1');
+      questionEl.focus({ preventScroll: true });
+    }
+
+    function pick(choiceIndex: number) {
+      if (locked) return;
+      const q = config.questions[cursor];
+      answers[q.id] = choiceIndex;
+      saveSession(type, { perspective, answers });
+
+      const buttons = choicesEl.querySelectorAll('button');
+      buttons.forEach((b, i) => {
+        b.ariaChecked = String(i === choiceIndex);
+        b.className = b.className.replace(
+          /border-rule text-ink-soft hover:border-clay hover:text-ink|border-clay bg-paper-raised text-ink/,
+          i === choiceIndex
+            ? 'border-clay bg-paper-raised text-ink'
+            : 'border-rule text-ink-soft hover:border-clay hover:text-ink',
+        );
+      });
+
+      locked = true;
+      // A beat long enough to see the choice register, short enough not to feel
+      // like waiting.
+      window.setTimeout(() => {
+        locked = false;
+        if (cursor + 1 < config.questions.length) {
+          cursor += 1;
+          render();
+        } else {
+          window.location.href = `${config.path}/result`;
+        }
+      }, 220);
+    }
+
+    startForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const picked = new FormData(startForm).get('perspective');
+      perspective = (picked as Perspective) ?? 'na';
+      // A fresh start means fresh answers: a half-finished earlier run would
+      // otherwise leak into this one.
+      answers = {};
+      cursor = 0;
+      clearSession(type);
+      saveSession(type, { perspective, answers });
+      enterQuiz();
+      render();
+    });
+
+    /** The reference sections below the fold are noise once answering starts. */
+    function enterQuiz() {
+      intro.hidden = true;
+      stage.hidden = false;
+      document.getElementById('quiz-aside')?.setAttribute('hidden', '');
+    }
+
+    function exitQuiz() {
+      stage.hidden = true;
+      intro.hidden = false;
+      document.getElementById('quiz-aside')?.removeAttribute('hidden');
+    }
+
+    backBtn.addEventListener('click', () => {
+      if (cursor === 0) return;
+      cursor -= 1;
+      render();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      clearSession(type);
+      answers = {};
+      cursor = 0;
+      exitQuiz();
+      window.scrollTo({ top: 0 });
+    });
+
+    // Coming back from the result page: resume where the visitor left off
+    // rather than making them retype sixteen answers.
+    const saved = loadSession(type);
+    if (saved && Object.keys(saved.answers).length > 0) {
+      perspective = saved.perspective;
+      answers = saved.answers;
+      const firstUnanswered = config.questions.findIndex(
+        (q) => typeof answers[q.id] !== 'number',
+      );
+      cursor = firstUnanswered === -1 ? config.questions.length - 1 : firstUnanswered;
+      enterQuiz();
+      render();
+    }
+  }
+</script>

@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import Result from '../../components/Result.astro';
+import NextLink from '../../components/NextLink.astro';
+import { divorce } from '../../lib/calc';
+---
+
+<Base
+  title="이혼 확률 계산기 결과"
+  description="답변을 바탕으로 계산한 부부 관계 위험 지수와, 지수를 끌어올린 요인들입니다."
+  path="/divorce/result"
+  noindex
+>
+  <Result config={divorce}>
+    <Fragment slot="next">
+      <NextLink
+        href="/twilight"
+        eyebrow="다른 계산기"
+        title="황혼 이혼 계산기"
+        blurb="결혼 20년이 넘었거나 은퇴를 앞두고 계시다면, 그 시기만의 문항이 따로 있습니다."
+      />
+      <NextLink
+        href="/guide/four-horsemen"
+        eyebrow="가이드"
+        title="이혼을 예측하는 4가지 대화 습관"
+        blurb="비난, 경멸, 방어, 담쌓기 — 결과에서 가장 큰 배점을 가진 항목들입니다."
+      />
+      <NextLink
+        href="/guide/divorce-reasons-korea"
+        eyebrow="가이드"
+        title="한국 부부는 왜 이혼할까"
+        blurb="통계로 보는 이혼 사유, 그리고 통계가 말해주지 않는 것."
+      />
+    </Fragment>
+  </Result>
+</Base>
