@@ -10,7 +10,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "clean": "node ./scripts/clean.mjs",
-    "test": "node --test tests/calc.test.mjs",
+    "test": "node --test tests/calc.test.mjs tests/fault.test.mjs",
     "og": "node ./scripts/build-og.mjs",
     "deploy": "npm run build && wrangler deploy"
   },

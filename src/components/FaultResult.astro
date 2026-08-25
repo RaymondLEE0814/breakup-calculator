@@ -1,0 +1,233 @@
+---
+import { fault } from '../lib/calc/fault';
+---
+
+<div id="fault-result" class="mx-auto max-w-3xl px-5 sm:px-8">
+  <div id="fault-empty" class="surface-card mt-12 p-6 sm:p-9">
+    <p class="gutter-label">결과</p>
+    <h1 class="mt-4 text-[1.75rem] leading-snug">아직 답변이 없습니다</h1>
+    <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
+      결과는 답변한 기기 안에서만 계산되기 때문에, 처음부터 다시 하셔야 합니다.
+    </p>
+    <a href={fault.path} class="button-primary mt-8">{fault.name} 시작하기</a>
+  </div>
+
+  <article id="fault-body" hidden>
+    {/* Where violence or coercive control was reported, the split is not shown
+        at all. Asking a victim to apportion blame is neither safe nor
+        accurate — people who have been hurt over-assign fault to themselves. */}
+    <aside
+      id="fault-safety"
+      class="mt-12 rounded-xl border border-clay bg-clay-soft p-5 text-[0.9375rem] leading-relaxed"
+      hidden
+    >
+      <p class="font-semibold">이 결과는 표시하지 않습니다</p>
+      <p class="mt-2 text-ink-soft">
+        말씀해 주신 상황(폭력·통제)이 있는 관계에서는, 책임 비율을 스스로 매겨 보는 일이 안전하지도
+        정확하지도 않습니다. 폭력 피해가 있는 상황의 법률 문제는 일반적인 유책 다툼과 다르게
+        다뤄집니다. 여성긴급전화 <strong class="nums text-ink">1366</strong>(24시간), 대한법률구조공단
+        <strong class="nums text-ink">132</strong>에서 상황에 맞는 도움을 받으실 수 있습니다.
+      </p>
+    </aside>
+
+    <div id="fault-main" hidden>
+      <header class="surface-card mt-6 p-6 sm:p-9">
+        <p class="gutter-label">과실(유책) 비율 · 응답 기준 정리</p>
+        <p class="mt-5 rounded-xl bg-clay-soft p-4 text-[0.875rem] leading-relaxed text-ink-soft">
+          이 결과는 응답을 정리한 것이지 법률 판단이 아닙니다. 실제 재판에서 파탄의 책임은 양쪽의
+          주장과 <strong class="text-ink">증거</strong>를 바탕으로 판단되며, 같은 사정이라도 증거가
+          있는지에 따라 결론이 달라질 수 있습니다. 이 화면은 상대방의 응답 없이 한쪽의 기억만으로
+          만들어졌다는 한계도 함께 갖고 있습니다.
+        </p>
+
+        <div id="fault-gauge" class="mt-8" hidden>
+          <div class="flex items-baseline justify-between gap-4">
+            <p class="text-[0.9375rem] font-semibold">
+              <span id="fault-spouse-label"></span> <span id="fault-spouse-pct" class="nums"></span>
+            </p>
+            <p class="text-[0.9375rem] font-semibold">
+              나 <span id="fault-self-pct" class="nums"></span>
+            </p>
+          </div>
+          <div class="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-rule-soft">
+            <div id="fault-bar-spouse" class="h-3 bg-clay transition-[width] duration-700" style="width:0%"></div>
+            <div id="fault-bar-self" class="h-3 bg-ink-faint transition-[width] duration-700" style="width:0%"></div>
+          </div>
+          <p id="fault-band" class="mt-3 text-[0.9375rem] text-ink-soft"></p>
+        </div>
+
+        <div id="fault-undecided" class="mt-8" hidden>
+          <p class="text-[1.125rem] font-semibold">비율을 표시하지 않습니다</p>
+          <p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
+            응답에서 뚜렷한 유책 사유가 보고되지 않았습니다. 유책 비율은 다툴 만한 사유가 있을 때
+            의미가 있는 숫자입니다. 지금 결과로는 비율을 표시하지 않습니다.
+          </p>
+        </div>
+
+        <p id="fault-threat" class="mt-5 rounded-xl border border-clay p-4 text-[0.875rem] leading-relaxed text-ink-soft" hidden>
+          위협을 느끼는 상황이 지금도 있다면, 여성긴급전화 <strong class="nums text-ink">1366</strong>에서
+          24시간 도움을 받으실 수 있습니다.
+        </p>
+      </header>
+
+      <section class="surface-card mt-6 p-6 sm:p-9">
+        <h2 class="text-[1.375rem]">사유별로 보면</h2>
+        <p class="mt-2 text-[0.8125rem] text-ink-faint">
+          위쪽 막대가 {fault.pronoun.na} 쪽, 아래쪽이 내 쪽입니다. 응답하신 정도와 방향을 그대로 나눈
+          것입니다.
+        </p>
+        <dl id="fault-dims" class="mt-7 flex flex-col gap-7"></dl>
+      </section>
+
+      <section class="surface-card mt-6 p-6 sm:p-9">
+        <h2 class="text-[1.375rem]">알아 두실 것</h2>
+        <div class="prose-quiet mt-4 text-[0.9375rem]">
+          <ul>
+            <li>
+              재판상 이혼 사유는 민법 제840조가 여섯 가지로 정하고 있습니다 — 배우자의 부정한 행위,
+              악의의 유기, 배우자 또는 그 직계존속에 의한 심히 부당한 대우, 자기의 직계존속에 대한
+              배우자의 심히 부당한 대우, 3년 이상의 생사불명, 그 밖에 혼인을 계속하기 어려운 중대한
+              사유입니다. 이 계산기는 이 중 생사불명을 제외한 다섯 범주를 다룹니다.
+            </li>
+            <li>
+              혼인 파탄에 주된 책임이 있는 배우자의 이혼 청구는 원칙적으로 제한된다는 것이 일반적인
+              법리입니다. 다만 예외가 인정되는 경우가 있으며, 어느 쪽에 해당하는지는 사안에 따라
+              다릅니다.
+            </li>
+            <li>
+              위자료는 파탄의 책임 정도, 혼인 기간, 당사자의 사정 등을 종합해 정해진다고 알려져
+              있습니다. <strong>이 도구는 금액을 산출하지 않습니다.</strong>
+            </li>
+            <li>
+              차원별 가중치는 판례 통계가 아니라 이 서비스의 설계상 배분입니다. 실제 재판에서 각 사유가
+              갖는 무게와는 다를 수 있습니다.
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <section class="surface-card mt-6 p-6 sm:p-9">
+      <h2 class="text-[1.375rem]">다음 단계</h2>
+      <p id="fault-next-line" class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
+        정리한 내용을 들고 상담을 받으시면, 처음부터 사정을 설명하는 시간을 줄일 수 있습니다.
+      </p>
+      <div class="mt-6 flex flex-col gap-2 sm:flex-row">
+        <a href="/legal?from=fault" class="button-primary text-center">법률 상담 신청하기</a>
+      </div>
+      <p id="fault-counseling-line" class="mt-4 text-[0.875rem] text-ink-faint">
+        관계를 다시 볼 수 있는지 먼저 확인하고 싶다면 — <a
+          href="/counseling?from=fault"
+          class="text-clay underline underline-offset-[3px]">부부상담 신청</a
+        >
+      </p>
+    </section>
+
+    <p class="mt-8 text-[0.8125rem] leading-relaxed text-ink-faint">
+      본 서비스는 관계를 돌아보기 위한 자기점검 목적의 도구입니다. 이 화면의 어떤 내용도 법률 자문이
+      아니며, 구체적인 사안의 판단은 변호사와 상담하시기 바랍니다. 답변과 결과는 저장되지 않고 공유
+      링크로도 만들어지지 않습니다.
+    </p>
+  </article>
+</div>
+
+<script>
+  import { fault, FAULT_DIM_NOTE } from '../lib/calc/fault';
+  import { isFaultComplete, scoreFault, withPronoun } from '../lib/calc/engine';
+  import { loadSession } from '../lib/storage';
+
+  const BAND_COPY = {
+    even: '양쪽에 비슷하게 실려 있습니다.',
+    leaning: '한쪽에 다소 기울어 있습니다.',
+    clear: '한쪽에 뚜렷하게 기울어 있습니다.',
+    lopsided:
+      '대부분 한쪽에 실려 있는 것으로 응답하셨습니다. 다만 한쪽의 응답만으로는 이렇게 일방적인 결론이 나오기 쉽다는 점을 감안해 주세요.',
+  };
+
+  const root = document.getElementById('fault-result');
+  if (root) {
+    const session = loadSession('fault');
+    if (session && isFaultComplete(fault, session.answers)) {
+      const result = scoreFault(fault, session.answers);
+      const spouseNoun = fault.pronoun[session.perspective];
+
+      document.getElementById('fault-empty')!.hidden = true;
+      document.getElementById('fault-body')!.hidden = false;
+
+      if (result.safetyTriggered) {
+        // The split is computed but never shown. Everything below the banner
+        // stays hidden, including the ratio and the breakdown.
+        document.getElementById('fault-safety')!.hidden = false;
+        document.getElementById('fault-next-line')!.textContent =
+          '지금 상황에서는 일반적인 이혼 상담보다, 폭력 피해 상황을 다뤄 본 곳의 도움이 먼저입니다.';
+        document.getElementById('fault-counseling-line')!.hidden = true;
+      } else {
+        document.getElementById('fault-main')!.hidden = false;
+
+        if (result.undecided) {
+          document.getElementById('fault-undecided')!.hidden = false;
+        } else {
+          const gauge = document.getElementById('fault-gauge')!;
+          gauge.hidden = false;
+          document.getElementById('fault-spouse-label')!.textContent = spouseNoun;
+          document.getElementById('fault-spouse-pct')!.textContent = `${result.spouseRatio}%`;
+          document.getElementById('fault-self-pct')!.textContent = `${result.selfRatio}%`;
+          document.getElementById('fault-band')!.textContent = BAND_COPY[result.band!];
+          requestAnimationFrame(() => {
+            (document.getElementById('fault-bar-spouse') as HTMLElement).style.width =
+              `${result.spouseRatio}%`;
+            (document.getElementById('fault-bar-self') as HTMLElement).style.width =
+              `${result.selfRatio}%`;
+          });
+        }
+
+        if (result.threatReported) document.getElementById('fault-threat')!.hidden = false;
+
+        const list = document.getElementById('fault-dims')!;
+        // Heaviest ground first, so the reader sees what actually drove it.
+        const ordered = [...result.dims].sort(
+          (a, b) => b.self + b.spouse - (a.self + a.spouse),
+        );
+        ordered.forEach((dim) => {
+          const row = document.createElement('div');
+          row.className = 'settle';
+          row.innerHTML = `
+            <div class="flex items-baseline justify-between gap-4">
+              <dt class="text-[0.9375rem] font-semibold"></dt>
+              <dd class="text-[0.8125rem] text-ink-faint nums"></dd>
+            </div>
+            <div class="mt-3 flex flex-col gap-1.5">
+              <div class="flex items-center gap-2">
+                <span class="w-12 shrink-0 text-[0.75rem] text-ink-faint" data-sp-label></span>
+                <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-rule-soft">
+                  <div data-sp class="h-1.5 rounded-full bg-clay transition-[width] duration-700" style="width:0%"></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-12 shrink-0 text-[0.75rem] text-ink-faint">나</span>
+                <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-rule-soft">
+                  <div data-me class="h-1.5 rounded-full bg-ink-faint transition-[width] duration-700" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-[0.875rem] leading-relaxed text-ink-faint"></p>`;
+          row.querySelector('dt')!.textContent = dim.label;
+          row.querySelector('dd')!.textContent = `비중 ${Math.round(dim.weight * 100)}%`;
+          row.querySelector('[data-sp-label]')!.textContent = spouseNoun;
+          row.querySelector('p')!.textContent = FAULT_DIM_NOTE[dim.key] ?? '';
+          list.appendChild(row);
+          requestAnimationFrame(() => {
+            (row.querySelector('[data-sp]') as HTMLElement).style.width = `${dim.spouse}%`;
+            (row.querySelector('[data-me]') as HTMLElement).style.width = `${dim.self}%`;
+          });
+        });
+      }
+
+      // The intro text uses {배우자}; keep the page consistent with the
+      // perspective chosen at the start.
+      document.querySelectorAll<HTMLElement>('[data-pronoun]').forEach((el) => {
+        el.textContent = withPronoun(el.textContent ?? '', fault, session.perspective);
+      });
+    }
+  }
+</script>

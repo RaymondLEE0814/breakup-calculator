@@ -1,17 +1,18 @@
 ---
-import Base from '../../layouts/Base.astro';
-import Result from '../../components/Result.astro';
-import NextLink from '../../components/NextLink.astro';
-import { divorce, divorceDeep } from '../../lib/calc';
+import Base from '../../../layouts/Base.astro';
+import Result from '../../../components/Result.astro';
+import NextLink from '../../../components/NextLink.astro';
+import { divorce, divorceDeep } from '../../../lib/calc';
 ---
 
 <Base
   title="이혼 확률 계산기 결과"
   description="답변을 바탕으로 계산한 관계 위험 지수와, 지수를 끌어올린 요인들입니다."
-  path="/divorce/result"
+  path="/divorce/quick/result"
   noindex
 >
   <Result
+    branch
     config={divorce}
     deepPath={divorceDeep.path}
     deepName={divorceDeep.name}

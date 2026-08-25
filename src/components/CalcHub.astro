@@ -1,0 +1,142 @@
+---
+import Faq from './Faq.astro';
+import type { CalcConfig } from '../lib/calc/types';
+
+interface Props {
+  simple: CalcConfig;
+  deep: CalcConfig;
+  /** One sentence under each choice card. */
+  blurbs: { simple: string; deep: string };
+  faq: Array<{ q: string; a: string }>;
+  reading: Array<{ href: string; title: string; blurb: string }>;
+  /** Extra links shown under 함께 읽어보기, e.g. the fault calculator. */
+  extraLinks?: Array<{ href: string; title: string; blurb: string }>;
+}
+
+const { simple, deep, blurbs, faq, reading, extraLinks = [] } = Astro.props;
+
+const cards = [
+  { config: simple, eyebrow: '빠른 검사', label: '빠른 검사 시작', blurb: blurbs.simple },
+  { config: deep, eyebrow: '심화 진단', label: '심화 진단 시작', blurb: blurbs.deep },
+];
+
+const byStep = simple.steps.map((step, i) => ({
+  ...step,
+  questions: simple.questions.filter((q) => q.step === i + 1),
+}));
+
+const pronounRe = /\{(?:상대|배우자)\}/g;
+---
+
+{/* The hub keeps the body the quick test used to carry — question preview,
+    FAQ, reading — because these three URLs are the ones search engines already
+    know. Only the questionnaire itself moved down a level. */}
+<div class="mx-auto max-w-3xl px-5 sm:px-8">
+  <p class="gutter-label">{simple.title}</p>
+  <h1 class="mt-4 text-[2.25rem] leading-tight sm:text-[3rem]">{simple.title}</h1>
+  <p class="mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
+    두 가지 길이가 있습니다. 1분짜리 빠른 검사는 위험 신호가 있는지를 훑어보는 선별 검사이고, 심화
+    진단은 그 신호가 어디에서 오는지를 구조로 나눠 보는 검사입니다.
+  </p>
+
+  <div class="mt-10 grid gap-4 sm:grid-cols-2">
+    {
+      cards.map((card, i) => (
+        <a
+          href={card.config.path}
+          class="settle group flex min-h-56 flex-col justify-between rounded-2xl border border-rule-soft bg-paper-raised p-6 transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-clay hover:bg-white"
+          style={`animation-delay:${i * 60}ms`}
+        >
+          <div>
+            <p class="text-[0.75rem] font-semibold text-clay">{card.eyebrow}</p>
+            <p class="mt-1 text-[0.8125rem] text-ink-faint nums">
+              {card.config.questions.length}문항 · {card.config.minutes}
+            </p>
+            <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">{card.blurb}</p>
+          </div>
+          <p class="mt-6 text-[0.9375rem] font-semibold transition-colors group-hover:text-clay">
+            {card.label} →
+          </p>
+        </a>
+      ))
+    }
+  </div>
+  <p class="mt-4 text-[0.8125rem] text-ink-faint">
+    두 검사 모두 무료이며, 답변은 기기 밖으로 나가지 않습니다.
+  </p>
+
+  <section class="mt-20" aria-labelledby="which">
+    <h2 id="which" class="text-[1.75rem]">어떤 검사를 골라야 하나요</h2>
+    <div class="prose-quiet mt-4">
+      <p>
+        처음이라면 빠른 검사로 시작하시면 됩니다. 일곱 문항은 관계 연구에서 예측력이 가장 잘 알려진
+        항목들만 골라 담은 것이라, 짧아도 신호가 있는지는 꽤 정확하게 걸러냅니다. 다만 어디가 약한지는
+        알려주지 못합니다. 그래서 결과에 ±7의 폭이 함께 표시됩니다.
+      </p>
+      <p>
+        심화 진단은 같은 관계를 여러 구조로 나눠 봅니다. 만족과 헌신을 따로 재고, 무엇이 관계를 붙잡고
+        있는지를 별도로 재고, 바깥의 압력과 그것을 다루는 방식이 맞물리는 지점을 곱셈으로 계산합니다.
+        결과로는 지수뿐 아니라 구조별 프로파일과 유형이 나옵니다.
+      </p>
+      <p>
+        두 결과가 다르게 나올 수 있습니다. 그럴 때는 심화 진단 쪽이 더 많은 정보를 담고 있습니다. 빠른
+        검사 지수가 30을 넘거나 ±7의 폭이 답답하게 느껴진다면, 심화 진단으로 이어 가시길 권합니다.
+      </p>
+    </div>
+  </section>
+
+  <section class="mt-20 border-t border-rule pt-10" aria-labelledby="asks">
+    <h2 id="asks" class="text-[1.75rem]">빠른 검사가 묻는 것</h2>
+    <p class="mt-3 text-[0.875rem] leading-relaxed text-ink-faint">
+      일곱 문항 전부를 미리 공개합니다. 배점과 계산식은 <a
+        href="/about"
+        class="text-clay underline underline-offset-[3px]">계산 방식 페이지</a
+      >에 있습니다.
+    </p>
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      {
+        byStep.map((step) => (
+          <div class="surface-card p-5">
+            <div class="flex items-baseline justify-between gap-3">
+              <h3 class="text-[1.0625rem]">{step.title}</h3>
+              <span class="shrink-0 text-[0.75rem] text-ink-faint nums">
+                {step.questions.length}개 문항
+              </span>
+            </div>
+            <ul class="mt-4 flex flex-col gap-2.5">
+              {step.questions.map((q) => (
+                <li class="text-[0.9375rem] leading-relaxed text-ink-soft">
+                  {q.text.replace(pronounRe, simple.pronoun.na)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mt-20 border-t border-rule pt-10" aria-labelledby="hub-faq">
+    <h2 id="hub-faq" class="text-[1.75rem]">자주 묻는 질문</h2>
+    <Faq items={faq} />
+  </section>
+
+  <section class="mt-20 border-t border-rule pt-10" aria-labelledby="hub-reading">
+    <h2 id="hub-reading" class="text-[1.75rem]">함께 읽어보기</h2>
+    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+      {
+        [...reading, ...extraLinks].map((item) => (
+          <a
+            href={item.href}
+            class="group flex flex-col rounded-2xl border border-rule-soft bg-paper-raised p-5 transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-clay hover:bg-white"
+          >
+            <span class="text-[0.9375rem] font-semibold transition-colors group-hover:text-clay">
+              {item.title}
+            </span>
+            <span class="mt-1 text-[0.875rem] leading-relaxed text-ink-faint">{item.blurb}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</div>

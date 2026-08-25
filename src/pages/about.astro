@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { CALC_TYPES, CONFIGS, GRADE_COPY, K, L, M, U, dimMax, maxScore } from '../lib/calc';
+import { fault } from '../lib/calc/fault';
 import { breadcrumbLd } from '../lib/site';
 
 const title = '계산 방식 | 지수는 어떻게 만들어지나 | 이혼 확률 계산기';
@@ -240,6 +241,80 @@ const schemas = [
         );
       })
     }
+
+    <section class="mt-16 border-t border-rule pt-8">
+      <h2 class="text-2xl">
+        <a href={fault.path} class="hover:text-clay">{fault.title}</a>
+      </h2>
+      <p class="mt-2 text-[0.8125rem] text-ink-faint">
+        {fault.questions.length}문항 · 차원 {fault.dims.length}개 · {fault.minutes}
+      </p>
+      <div class="prose-quiet mt-4">
+        <p>
+          이 계산기만 산출 방식이 다릅니다. 위험 지수가 아니라 <strong>두 사람 사이의 배분</strong>이기
+          때문에, 로지스틱 변환도 5~85 범위도 쓰지 않습니다. 문항마다 그 일이 어느 정도였는지를 0~4점으로
+          받고, 있었다고 답한 경우에만 그것이 주로 어느 쪽이었는지를 물어 점수를 양쪽에 나눕니다
+          (주로 상대 0.15 / 양쪽 비슷 0.5 / 주로 나 0.85). 차원별로 정규화한 뒤 가중합해 양쪽 점수를
+          구하고, 그 비율을 5%p 단위로 반올림해 표시합니다.
+        </p>
+        <p>
+          양쪽 점수의 합이 {fault.minReportable}에 미치지 못하면 <strong>비율을 표시하지 않습니다.</strong>
+          거의 아무것도 보고되지 않은 상태에서 비율을 내는 것은 노이즈를 숫자처럼 보이게 만드는 일이기
+          때문입니다.
+        </p>
+        <p>
+          차원별 가중치는 판례 통계가 아니라 설계상의 배분입니다. 그리고 이 계산기는 위자료 금액을
+          산출하지 않고, 승소 가능성을 말하지 않으며, 증거 수집 방법을 조언하지 않습니다. 그것들은
+          변호사와 상담할 영역입니다.
+        </p>
+      </div>
+
+      <table class="mt-6 w-full text-left text-[0.875rem]">
+        <caption class="sr-only">{fault.title}의 차원별 가중치</caption>
+        <thead class="border-b border-rule text-[0.75rem] tracking-[0.08em] text-ink-faint uppercase">
+          <tr>
+            <th scope="col" class="py-2 font-medium">사유</th>
+            <th scope="col" class="py-2 font-medium">근거</th>
+            <th scope="col" class="py-2 text-right font-medium">가중치</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            fault.dims.map((dim) => (
+              <tr class="border-b border-rule-soft">
+                <td class="py-2">{dim.label}</td>
+                <td class="py-2 text-ink-faint">{dim.note}</td>
+                <td class="py-2 text-right nums">{Math.round(dim.weight * 100)}%</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+
+      <div class="mt-8 flex flex-col gap-7">
+        {
+          fault.questions.map((q) => (
+            <div>
+              <div class="flex items-baseline gap-3">
+                <span class="gutter-label">{q.id}</span>
+                <p class="text-[0.9375rem] font-semibold">{q.text}</p>
+              </div>
+              <ul class="mt-2 ml-9 flex flex-col gap-1 text-[0.875rem] text-ink-soft">
+                {q.choices.map((choice) => (
+                  <li class="flex items-baseline justify-between gap-4 border-b border-rule-soft pb-1">
+                    <span>{choice.label}</span>
+                    <span class="shrink-0 nums text-ink-faint">{choice.score}점</span>
+                  </li>
+                ))}
+              </ul>
+              <p class="mt-2 ml-9 text-[0.8125rem] text-ink-faint">
+                점수가 붙은 경우에만 이어서 묻습니다 — {q.direction.text}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
 
     <section class="mt-16 border-t border-rule pt-8">
       <div class="prose-quiet">

@@ -1,0 +1,428 @@
+---
+import { CONTACT_EMAIL, RETENTION_DAYS, partnerFor, type ConsultKind } from '../lib/partners';
+
+interface Props {
+  kind: ConsultKind;
+}
+
+const { kind } = Astro.props;
+const partner = partnerFor(kind);
+const isLegal = kind === 'legal';
+
+const collected = isLegal
+  ? '호칭, 휴대전화 번호, 연락 가능 시간대, 상담 희망 분야, (선택) 혼인 기간 구간과 미성년 자녀 유무, 남기고 싶은 말, (선택 시) 검사 결과 요약'
+  : '호칭, 휴대전화 번호, 연락 가능 시간대, 희망 상담 방식, (대면 선택 시) 시·도 지역, 남기고 싶은 말, (선택 시) 검사 결과 요약';
+const purpose = isLegal ? '법률 상담 연결을 위한 연락과 일정 조율' : '부부상담 연결을 위한 연락과 일정 조율';
+---
+
+{
+  !partner && (
+    <div class="surface-card mt-10 p-6 sm:p-9">
+      <p class="gutter-label">준비 중</p>
+      <h2 class="mt-3 text-[1.375rem]">상담 연결을 준비하고 있습니다</h2>
+      <p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
+        연락처를 받으려면 어느 기관으로 전달되는지를 먼저 정확히 알려 드려야 합니다. 제휴 기관이
+        확정되는 대로 이 자리에 신청서가 열립니다. 그때까지는 아래 안내만 참고해 주세요.
+      </p>
+      <p class="mt-4 text-[0.875rem] text-ink-faint">
+        문의: <a href={`mailto:${CONTACT_EMAIL}`} class="text-clay underline underline-offset-[3px]">
+          {CONTACT_EMAIL}
+        </a>
+      </p>
+    </div>
+  )
+}
+
+{
+  partner && (
+    <form id="consult-form" class="surface-card mt-10 p-5 sm:p-8" data-kind={kind} novalidate>
+      {/* Bots fill everything they can see. Humans never see this. */}
+      <div class="hidden" aria-hidden="true">
+        <label>
+          이 칸은 비워 두세요
+          <input type="text" name="website" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <div>
+          <label for="nickname" class="text-[0.9375rem] font-semibold">
+            호칭 <span class="text-clay">*</span>
+          </label>
+          <p class="mt-1 text-[0.8125rem] text-ink-faint">
+            실명이 아니어도 됩니다. 연락드릴 때 부를 호칭이면 충분합니다.
+          </p>
+          <input
+            id="nickname"
+            name="nickname"
+            type="text"
+            maxlength="20"
+            required
+            class="mt-2 w-full rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem]"
+            placeholder="예: 김OO, 미영님"
+          />
+        </div>
+
+        <div>
+          <label for="phone" class="text-[0.9375rem] font-semibold">
+            휴대전화 번호 <span class="text-clay">*</span>
+          </label>
+          <p class="mt-1 text-[0.8125rem] text-ink-faint">상담 연결에 쓰이는 유일한 연락 수단입니다.</p>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputmode="numeric"
+            required
+            class="mt-2 w-full rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem] nums"
+            placeholder="010-0000-0000"
+          />
+        </div>
+
+        <fieldset>
+          <legend class="text-[0.9375rem] font-semibold">
+            연락 가능 시간대 <span class="text-clay">*</span>
+          </legend>
+          <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            {[
+              ['weekday_day', '평일 낮'],
+              ['weekday_evening', '평일 저녁'],
+              ['weekend', '주말'],
+              ['text_first', '문자를 먼저 주세요'],
+            ].map(([value, label]) => (
+              <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem] transition-colors hover:border-clay has-checked:border-clay has-checked:bg-clay-soft">
+                <input type="radio" name="contact_hours" value={value} required class="accent-clay" />
+                {label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {!isLegal && (
+          <fieldset>
+            <legend class="text-[0.9375rem] font-semibold">
+              희망 상담 방식 <span class="text-clay">*</span>
+            </legend>
+            <div class="mt-3 grid gap-2 sm:grid-cols-3">
+              {[
+                ['inperson', '대면'],
+                ['video', '화상'],
+                ['phone', '전화'],
+              ].map(([value, label]) => (
+                <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem] transition-colors hover:border-clay has-checked:border-clay has-checked:bg-clay-soft">
+                  <input type="radio" name="method" value={value} required class="accent-clay" />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {!isLegal && (
+          <div id="region-field" hidden>
+            <label for="region" class="text-[0.9375rem] font-semibold">
+              지역 <span class="text-clay">*</span>
+            </label>
+            <p class="mt-1 text-[0.8125rem] text-ink-faint">
+              대면 상담 기관을 찾기 위해서만 씁니다. 시·도까지만 받습니다.
+            </p>
+            <select
+              id="region"
+              name="region"
+              class="mt-2 w-full rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem]"
+            >
+              <option value="">선택해 주세요</option>
+              {[
+                '서울','부산','대구','인천','광주','대전','울산','세종',
+                '경기','강원','충북','충남','전북','전남','경북','경남','제주',
+              ].map((r) => (
+                <option value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {isLegal && (
+          <fieldset>
+            <legend class="text-[0.9375rem] font-semibold">
+              상담 희망 분야 <span class="text-clay">*</span>
+            </legend>
+            <p class="mt-1 text-[0.8125rem] text-ink-faint">여러 개 고르셔도 됩니다.</p>
+            <div class="mt-3 grid gap-2 sm:grid-cols-2">
+              {[
+                ['procedure', '이혼 절차 일반'],
+                ['money', '위자료·재산 문제'],
+                ['custody', '양육 문제'],
+                ['undecided', '아직 정리 중'],
+              ].map(([value, label]) => (
+                <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem] transition-colors hover:border-clay has-checked:border-clay has-checked:bg-clay-soft">
+                  <input type="checkbox" name="topics" value={value} class="accent-clay" />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {isLegal && (
+          <div class="grid gap-6 sm:grid-cols-2">
+            <div>
+              <label for="marriage_band" class="text-[0.9375rem] font-semibold">혼인 기간</label>
+              <p class="mt-1 text-[0.8125rem] text-ink-faint">선택 항목입니다.</p>
+              <select
+                id="marriage_band"
+                name="marriage_band"
+                class="mt-2 w-full rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem]"
+              >
+                <option value="">답하지 않음</option>
+                <option value="lt5">5년 미만</option>
+                <option value="y5_15">5~15년</option>
+                <option value="y15_30">15~30년</option>
+                <option value="gte30">30년 이상</option>
+              </select>
+            </div>
+            <div>
+              <label for="minor_children" class="text-[0.9375rem] font-semibold">미성년 자녀</label>
+              <p class="mt-1 text-[0.8125rem] text-ink-faint">선택 항목입니다.</p>
+              <select
+                id="minor_children"
+                name="minor_children"
+                class="mt-2 w-full rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem]"
+              >
+                <option value="na">답하지 않음</option>
+                <option value="yes">있음</option>
+                <option value="no">없음</option>
+              </select>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <label for="message" class="text-[0.9375rem] font-semibold">남기고 싶은 말</label>
+          <p class="mt-1 text-[0.8125rem] text-ink-faint">
+            선택 항목입니다. 적어 두시면 첫 상담이 조금 빨라집니다.
+          </p>
+          <textarea
+            id="message"
+            name="message"
+            maxlength="500"
+            rows="4"
+            class="mt-2 w-full rounded-xl border border-rule bg-white px-4 py-3 text-[0.9375rem] leading-relaxed"
+          />
+        </div>
+
+        <label
+          id="attach-row"
+          class="flex cursor-pointer items-start gap-3 rounded-xl border border-rule bg-white p-4 text-[0.9375rem] leading-relaxed"
+          hidden
+        >
+          <input type="checkbox" name="result_attached" class="mt-1 accent-clay" />
+          <span>
+            <span class="font-semibold">(선택)</span> 방금 받은 검사 결과 요약을 신청서에 함께
+            전달합니다. <span id="attach-detail" class="text-ink-faint" /> 문항에 어떻게 답했는지는
+            전달되지 않습니다.
+          </span>
+        </label>
+      </div>
+
+      <div class="mt-8 flex flex-col gap-3 border-t border-rule-soft pt-6">
+        <label class="flex cursor-pointer items-start gap-3 text-[0.9375rem] leading-relaxed">
+          <input type="checkbox" name="agree_privacy" required class="mt-1 accent-clay" />
+          <span><span class="font-semibold text-clay">(필수)</span> 개인정보 수집·이용에 동의합니다.</span>
+        </label>
+        <details class="ml-7 text-[0.8125rem] leading-relaxed text-ink-faint">
+          <summary class="cursor-pointer text-ink-soft">자세히 보기</summary>
+          <p class="mt-2"><strong class="text-ink-soft">수집 항목</strong> · {collected}</p>
+          <p class="mt-1"><strong class="text-ink-soft">이용 목적</strong> · {purpose}</p>
+          <p class="mt-1">
+            <strong class="text-ink-soft">보유 기간</strong> · 접수일로부터 {RETENTION_DAYS}일 후 지체
+            없이 파기합니다. 그 전에 연락 주시면 즉시 삭제합니다.
+          </p>
+          <p class="mt-1">
+            <strong class="text-ink-soft">동의를 거부할 권리</strong> · 동의하지 않으실 수 있습니다.
+            다만 연락처 없이는 상담 연결이 불가능하여, 이 경우 신청 접수가 제한됩니다.
+          </p>
+        </details>
+
+        <label class="mt-2 flex cursor-pointer items-start gap-3 text-[0.9375rem] leading-relaxed">
+          <input type="checkbox" name="agree_thirdparty" required class="mt-1 accent-clay" />
+          <span>
+            <span class="font-semibold text-clay">(필수)</span> 상담 연결을 위한 개인정보 제3자 제공에
+            동의합니다.
+          </span>
+        </label>
+        <details class="ml-7 text-[0.8125rem] leading-relaxed text-ink-faint">
+          <summary class="cursor-pointer text-ink-soft">자세히 보기</summary>
+          <p class="mt-2"><strong class="text-ink-soft">제공받는 자</strong> · {partner.name}</p>
+          <p class="mt-1"><strong class="text-ink-soft">제공 목적</strong> · 신청하신 상담의 진행</p>
+          <p class="mt-1"><strong class="text-ink-soft">제공 항목</strong> · 위 수집 항목과 동일</p>
+          <p class="mt-1">
+            <strong class="text-ink-soft">제공받는 자의 보유 기간</strong> · {partner.retention}
+          </p>
+          <p class="mt-1">
+            <strong class="text-ink-soft">동의를 거부할 권리</strong> · 동의하지 않으실 수 있으며, 이
+            경우 상담 기관으로 연결해 드릴 수 없습니다.
+          </p>
+        </details>
+      </div>
+
+      <button type="submit" id="consult-submit" class="button-primary mt-8 w-full sm:w-auto" disabled>
+        신청서 보내기
+      </button>
+      <p id="consult-error" class="mt-4 text-[0.875rem] leading-relaxed text-clay" hidden></p>
+    </form>
+  )
+}
+
+<script>
+  import { PHONE_PATTERN, consultEnabled, normalizeSource, submitConsult } from '../lib/consult';
+  import type { ConsultKind } from '../lib/partners';
+  import { CONFIGS } from '../lib/calc';
+  import { calcRiskIndex, isComplete, isFaultComplete, scoreFault } from '../lib/calc/engine';
+  import { fault } from '../lib/calc/fault';
+  import { loadSession } from '../lib/storage';
+  import type { CalcType } from '../lib/calc/types';
+
+  const form = document.getElementById('consult-form') as HTMLFormElement | null;
+  if (form) {
+    const kind = form.dataset.kind as ConsultKind;
+    const submit = document.getElementById('consult-submit') as HTMLButtonElement;
+    const errorEl = document.getElementById('consult-error')!;
+    const openedAt = Date.now();
+    // One token per rendered form. A retry after a failed send reuses it, so a
+    // network hiccup cannot produce two rows.
+    const clientToken = crypto.randomUUID();
+    const source = normalizeSource(new URLSearchParams(location.search).get('from'));
+
+    /**
+     * Result summary is opt-in and deliberately thin: index, grade, type — or
+     * for the fault calculator, the band and which grounds carried it. Nothing
+     * here can reconstruct an answer.
+     */
+    function summary(): Record<string, unknown> | null {
+      if (source === 'fault') {
+        const session = loadSession('fault');
+        if (!session || !isFaultComplete(fault, session.answers)) return null;
+        const r = scoreFault(fault, session.answers);
+        if (r.safetyTriggered || r.undecided || r.spouseRatio === null) return null;
+        const lo = Math.floor(r.spouseRatio / 10) * 10;
+        return {
+          fault_band: `sp${lo}_${lo + 10}`,
+          fault_top_dims: [...r.dims]
+            .sort((a, b) => b.self + b.spouse - (a.self + a.spouse))
+            .slice(0, 2)
+            .map((d) => d.key),
+        };
+      }
+      const type = source as CalcType;
+      const config = CONFIGS[type];
+      if (!config) return null;
+      const session = loadSession(type);
+      if (!session || !isComplete(config, session.answers)) return null;
+      const r = calcRiskIndex(config, session.answers);
+      if (r.safetyTriggered) return null;
+      return { risk_index: r.index, grade: r.grade, type_code: r.type?.code ?? null };
+    }
+
+    const available = summary();
+    if (available) {
+      const row = document.getElementById('attach-row')!;
+      row.hidden = false;
+      document.getElementById('attach-detail')!.textContent =
+        source === 'fault' ? '(비율 구간과 주요 사유)' : '(지수·등급·유형)';
+    }
+
+    // The method radios decide whether a region is needed at all.
+    const regionField = document.getElementById('region-field');
+    const regionInput = document.getElementById('region') as HTMLSelectElement | null;
+    form.querySelectorAll<HTMLInputElement>('input[name="method"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (!regionField || !regionInput) return;
+        const needed = input.value === 'inperson' && input.checked;
+        regionField.hidden = !needed;
+        regionInput.required = needed;
+        if (!needed) regionInput.value = '';
+      });
+    });
+
+    function consentGiven(): boolean {
+      const privacy = form!.querySelector<HTMLInputElement>('input[name="agree_privacy"]')!;
+      const third = form!.querySelector<HTMLInputElement>('input[name="agree_thirdparty"]')!;
+      return privacy.checked && third.checked;
+    }
+
+    function syncSubmit() {
+      submit.disabled = !consentGiven();
+    }
+    form.addEventListener('change', syncSubmit);
+    syncSubmit();
+
+    function fail(message: string) {
+      errorEl.hidden = false;
+      errorEl.textContent = message;
+      submit.disabled = false;
+      submit.textContent = '신청서 보내기';
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorEl.hidden = true;
+      const data = new FormData(form!);
+
+      if (String(data.get('website') ?? '')) return; // honeypot
+      if (Date.now() - openedAt < 5000) {
+        fail('잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      if (!consentGiven()) {
+        fail('필수 동의 항목에 체크해 주세요.');
+        return;
+      }
+
+      const nickname = String(data.get('nickname') ?? '').trim();
+      const phone = String(data.get('phone') ?? '').trim();
+      if (!nickname) return fail('호칭을 적어 주세요.');
+      if (!PHONE_PATTERN.test(phone)) return fail('휴대전화 번호를 010-0000-0000 형식으로 적어 주세요.');
+      if (!data.get('contact_hours')) return fail('연락 가능 시간대를 골라 주세요.');
+      if (kind === 'counseling' && !data.get('method')) return fail('희망 상담 방식을 골라 주세요.');
+      if (kind === 'counseling' && data.get('method') === 'inperson' && !data.get('region')) {
+        return fail('대면 상담은 지역을 골라 주세요.');
+      }
+      if (kind === 'legal' && data.getAll('topics').length === 0) {
+        return fail('상담 희망 분야를 하나 이상 골라 주세요.');
+      }
+      if (!consultEnabled) return fail('지금은 신청을 받을 수 없습니다. 잠시 후 다시 시도해 주세요.');
+
+      const attach = Boolean(data.get('result_attached')) && Boolean(available);
+      const now = new Date().toISOString();
+
+      submit.disabled = true;
+      submit.textContent = '보내는 중…';
+      try {
+        await submitConsult({
+          client_token: clientToken,
+          kind,
+          source,
+          nickname,
+          phone,
+          contact_hours: String(data.get('contact_hours')),
+          method: kind === 'counseling' ? String(data.get('method')) : null,
+          region: kind === 'counseling' ? String(data.get('region') ?? '') || null : null,
+          topics: kind === 'legal' ? data.getAll('topics').map(String) : null,
+          marriage_band: String(data.get('marriage_band') ?? '') || null,
+          minor_children: kind === 'legal' ? String(data.get('minor_children') ?? 'na') : null,
+          message: String(data.get('message') ?? '').trim() || null,
+          result_attached: attach,
+          ...(attach ? available! : {}),
+          agreed_privacy_at: now,
+          agreed_thirdparty_at: now,
+        });
+        window.location.href = `/${kind === 'legal' ? 'legal' : 'counseling'}/done`;
+      } catch {
+        fail(
+          '제출이 완료되지 못했습니다. 입력하신 내용은 그대로 남아 있으니, 잠시 후 다시 눌러 주세요.',
+        );
+      }
+    });
+  }
+</script>

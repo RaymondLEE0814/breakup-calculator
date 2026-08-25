@@ -4,6 +4,7 @@ import { divorce } from './divorce.ts';
 import { divorceDeep } from './divorce-deep.ts';
 import { twilight } from './twilight.ts';
 import { twilightDeep } from './twilight-deep.ts';
+import { fault } from './fault.ts';
 import type { CalcConfig, CalcType, Family } from './types.ts';
 
 export const CONFIGS: Record<CalcType, CalcConfig> = {
@@ -49,4 +50,4 @@ export function pair(family: Family): { simple: CalcConfig; deep: CalcConfig } {
 export * from './types.ts';
 export * from './engine.ts';
 export * from './factors.ts';
-export { breakup, breakupDeep, divorce, divorceDeep, twilight, twilightDeep };
+export { breakup, breakupDeep, divorce, divorceDeep, twilight, twilightDeep, fault };

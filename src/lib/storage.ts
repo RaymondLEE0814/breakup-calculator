@@ -1,5 +1,8 @@
 import type { AnswerMap, CalcType, Perspective } from './calc/types';
 
+/** The fault calculator stores sessions the same way but is not a CalcType. */
+export type SessionKey = CalcType | 'fault';
+
 export interface Session {
   perspective: Perspective;
   answers: AnswerMap;
@@ -11,14 +14,14 @@ export interface Session {
  * bumping the key makes them start over rather than scoring old answers
  * against a new model, which would be quietly wrong.
  */
-const key = (type: CalcType) => `calc:${type}:v2`;
+const key = (type: SessionKey) => `calc:${type}:v2`;
 
 /**
  * Answers live in sessionStorage and nowhere else until the visitor presses
  * share. Nothing here ever touches the network — that promise is made on the
  * home page and in the privacy policy, so keep it true.
  */
-export function loadSession(type: CalcType): Session | null {
+export function loadSession(type: SessionKey): Session | null {
   try {
     const raw = sessionStorage.getItem(key(type));
     if (!raw) return null;
@@ -32,7 +35,7 @@ export function loadSession(type: CalcType): Session | null {
   }
 }
 
-export function saveSession(type: CalcType, session: Session): void {
+export function saveSession(type: SessionKey, session: Session): void {
   try {
     sessionStorage.setItem(key(type), JSON.stringify(session));
   } catch {
@@ -40,7 +43,7 @@ export function saveSession(type: CalcType, session: Session): void {
   }
 }
 
-export function clearSession(type: CalcType): void {
+export function clearSession(type: SessionKey): void {
   try {
     sessionStorage.removeItem(key(type));
   } catch {

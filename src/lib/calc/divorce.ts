@@ -15,7 +15,7 @@ export const divorce: CalcConfig = {
   family: 'divorce',
   depth: 'simple',
   modelVersion: 2,
-  path: '/divorce',
+  path: '/divorce/quick',
   name: '이혼 확률 계산기',
   title: '이혼 확률 계산기',
   minutes: '약 1분',

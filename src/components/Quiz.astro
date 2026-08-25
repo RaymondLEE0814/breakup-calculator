@@ -1,12 +1,14 @@
 ---
-import type { CalcConfig } from '../lib/calc/types';
+import type { CalcConfig, FaultConfig } from '../lib/calc/types';
 
 interface Props {
-  config: CalcConfig;
+  config: CalcConfig | FaultConfig;
 }
 
 const { config } = Astro.props;
 const total = config.questions.length;
+const isFault = config.type === 'fault';
+const eyebrow = isFault ? '법률 정리' : config.depth === 'deep' ? '심화 진단' : '빠른 검사';
 ---
 
 <div
@@ -18,7 +20,7 @@ const total = config.questions.length;
   {/* Intro. Server-rendered so the first paint needs no JavaScript, and so a
       crawler sees real copy rather than an empty mount point. */}
   <div id="quiz-intro">
-    <p class="gutter-label">{config.depth === 'deep' ? '심화 진단' : '빠른 검사'}</p>
+    <p class="gutter-label">{eyebrow}</p>
     <h1 class="mt-4 max-w-2xl text-[2.25rem] leading-tight sm:text-[3rem]">{config.title}</h1>
     <p class="mt-5 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-soft">{config.intro}</p>
 
@@ -106,18 +108,37 @@ const total = config.questions.length;
 
 <script>
   import { CONFIGS } from '../lib/calc';
-  import { allQuestions, withPronoun } from '../lib/calc/engine';
-  import type { AnswerMap, CalcType, Perspective } from '../lib/calc/types';
+  import { fault } from '../lib/calc/fault';
+  import { allQuestions, faultSequence, withPronoun } from '../lib/calc/engine';
+  import type {
+    AnswerMap,
+    CalcConfig,
+    CalcType,
+    Perspective,
+    Question,
+  } from '../lib/calc/types';
   import { loadSession, saveSession, clearSession } from '../lib/storage';
 
   const root = document.getElementById('quiz');
   if (root) {
-    const type = root.dataset.calc as CalcType;
-    const config = CONFIGS[type];
-    // The safety question rides at the front of the sequence but is not one of
-    // the scored items, so it is counted separately everywhere below.
-    const sequence = allQuestions(config);
-    const offset = config.safety ? 1 : 0;
+    const type = root.dataset.calc as CalcType | 'fault';
+    const isFault = type === 'fault';
+    const config = isFault ? fault : CONFIGS[type as CalcType];
+
+    /**
+     * The fault calculator asks a follow-up under any item that reported
+     * something happened, so its list of screens changes as answers change.
+     * Everything below therefore navigates by question id rather than by a
+     * fixed index — an index would point at a different question the moment a
+     * follow-up appeared or vanished.
+     */
+    const parentIndex = new Map<string, number>();
+    if (isFault) {
+      fault.questions.forEach((q, i) => {
+        parentIndex.set(q.id, i);
+        parentIndex.set(q.direction.id, i);
+      });
+    }
 
     const intro = document.getElementById('quiz-intro')!;
     const stage = document.getElementById('quiz-stage')!;
@@ -133,13 +154,26 @@ const total = config.questions.length;
 
     let perspective: Perspective = 'na';
     let answers: AnswerMap = {};
-    let cursor = 0;
+    let currentId = '';
     /** Blocks a second click while the auto-advance animation runs. */
     let locked = false;
 
+    function sequence(): Question[] {
+      return isFault ? faultSequence(fault, answers) : allQuestions(config as CalcConfig);
+    }
+
+    function positionOf(seq: Question[]): number {
+      const i = seq.findIndex((q) => q.id === currentId);
+      return i === -1 ? 0 : i;
+    }
+
     function render() {
-      const q = sequence[cursor];
-      const isSafety = config.safety && cursor === 0;
+      const seq = sequence();
+      const at = positionOf(seq);
+      const q = seq[at];
+      currentId = q.id;
+
+      const isSafety = config.safety?.id === q.id;
       const step = config.steps[q.step - 1];
 
       if (isSafety) {
@@ -147,8 +181,17 @@ const total = config.questions.length;
         countEl.textContent = '';
         barEl.style.width = '0%';
         captionEl.textContent = '이 답변은 점수에 들어가지 않고, 저장되지도 않습니다.';
+      } else if (isFault) {
+        // Count by the parent item, so a follow-up does not read as a new
+        // question and the total never jumps around.
+        const n = (parentIndex.get(q.id) ?? 0) + 1;
+        stepEl.textContent = step ? `${step.title}` : '';
+        countEl.textContent = `${n} / ${fault.questions.length}`;
+        barEl.style.width = `${(n / fault.questions.length) * 100}%`;
+        captionEl.textContent = step?.caption ?? '';
       } else {
-        const n = cursor - offset + 1;
+        const offset = config.safety ? 1 : 0;
+        const n = at - offset + 1;
         stepEl.textContent = step ? `STEP ${q.step} · ${step.title}` : '';
         countEl.textContent = `${n} / ${config.questions.length}`;
         barEl.style.width = `${(n / config.questions.length) * 100}%`;
@@ -156,8 +199,8 @@ const total = config.questions.length;
       }
 
       questionEl.textContent = withPronoun(q.text, config, perspective);
-      backBtn.disabled = cursor === 0;
-      backBtn.classList.toggle('invisible', cursor === 0);
+      backBtn.disabled = at === 0;
+      backBtn.classList.toggle('invisible', at === 0);
 
       choicesEl.innerHTML = '';
       q.choices.forEach((choice, i) => {
@@ -187,8 +230,7 @@ const total = config.questions.length;
 
     function pick(choiceIndex: number) {
       if (locked) return;
-      const q = sequence[cursor];
-      answers[q.id] = choiceIndex;
+      answers[currentId] = choiceIndex;
       saveSession(type, { perspective, answers });
 
       choicesEl.querySelectorAll('button').forEach((b) => {
@@ -207,8 +249,12 @@ const total = config.questions.length;
       // like waiting.
       window.setTimeout(() => {
         locked = false;
-        if (cursor + 1 < sequence.length) {
-          cursor += 1;
+        // Recomputed after the answer, so a follow-up that just became
+        // relevant is already in the list.
+        const seq = sequence();
+        const at = positionOf(seq);
+        if (at + 1 < seq.length) {
+          currentId = seq[at + 1].id;
           render();
         } else {
           window.location.href = `${config.path}/result`;
@@ -236,23 +282,25 @@ const total = config.questions.length;
       // A fresh start means fresh answers: a half-finished earlier run would
       // otherwise leak into this one.
       answers = {};
-      cursor = 0;
       clearSession(type);
       saveSession(type, { perspective, answers });
+      currentId = sequence()[0].id;
       enterQuiz();
       render();
     });
 
     backBtn.addEventListener('click', () => {
-      if (cursor === 0) return;
-      cursor -= 1;
+      const seq = sequence();
+      const at = positionOf(seq);
+      if (at === 0) return;
+      currentId = seq[at - 1].id;
       render();
     });
 
     restartBtn.addEventListener('click', () => {
       clearSession(type);
       answers = {};
-      cursor = 0;
+      currentId = '';
       exitQuiz();
       window.scrollTo({ top: 0 });
     });
@@ -263,8 +311,9 @@ const total = config.questions.length;
     if (saved && Object.keys(saved.answers).length > 0) {
       perspective = saved.perspective;
       answers = saved.answers;
-      const firstUnanswered = sequence.findIndex((q) => typeof answers[q.id] !== 'number');
-      cursor = firstUnanswered === -1 ? sequence.length - 1 : firstUnanswered;
+      const seq = sequence();
+      const firstUnanswered = seq.find((q) => typeof answers[q.id] !== 'number');
+      currentId = (firstUnanswered ?? seq[seq.length - 1]).id;
       enterQuiz();
       render();
     }

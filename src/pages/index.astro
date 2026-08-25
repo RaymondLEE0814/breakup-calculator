@@ -41,11 +41,11 @@ const faq = [
   },
   {
     q: '답변한 내용이 저장되나요?',
-    a: '아니요. 모든 계산은 접속하신 기기 안에서 이루어지며, 응답은 서버로 전송되지 않습니다. 결과 공유하기를 직접 누르셨을 때에만 지수와 등급 같은 요약 정보가 익명으로 저장됩니다.',
+    a: '아니요. 모든 계산은 접속하신 기기 안에서 이루어지며, 문항에 어떻게 답했는지는 서버로 전송되지 않습니다. 예외는 두 가지뿐이고 둘 다 직접 누르셨을 때만 일어납니다 — 결과 공유하기를 누르면 지수와 등급 같은 요약이 익명으로 저장되고, 상담 신청서를 제출하면 신청서에 적으신 연락처가 저장됩니다. 신청서에도 검사 답변은 실리지 않습니다.',
   },
   {
     q: '회원가입이 필요한가요?',
-    a: '필요 없습니다. 무료이며, 이름이나 이메일을 포함한 어떤 개인정보도 요구하지 않습니다.',
+    a: '필요 없습니다. 검사는 무료이고, 이름이나 이메일 없이 끝까지 이용할 수 있습니다. 연락처를 적는 곳은 상담 신청서 한 곳뿐이며, 그것도 상담을 원하실 때 선택하는 일입니다.',
   },
 ];
 
@@ -121,40 +121,28 @@ const schemas = [
     <div class="max-w-2xl">
       <h2 id="calculators-title" class="text-[2rem] sm:text-[2.75rem]">지금 두 사람에게 맞는 질문</h2>
       <p class="mt-4 max-w-xl text-[1rem] leading-relaxed text-ink-soft">
-        관계의 시기마다 물어야 할 것이 다릅니다. 그리고 시기마다 두 가지 길이가 있습니다 — 1분짜리
-        빠른 선별 검사와, 관계를 구조로 나눠 보는 심화 진단입니다. 둘은 길이만 다른 것이 아니라 다른
-        도구입니다.
+        관계의 시기마다 물어야 할 것이 다릅니다. 가장 가까운 상황을 고르시면, 1분짜리 빠른 검사와
+        구조를 나눠 보는 심화 진단 중에서 다시 고르실 수 있습니다.
       </p>
     </div>
 
-    {
-      FAMILIES.map((family, i) => {
-        const { simple, deep } = pair(family);
-        return (
-          <div class="mt-10">
-            <p class="gutter-label">{FAMILY_LABEL[family]}</p>
-            <div class="mt-4 grid gap-4 lg:grid-cols-2">
-              <CalcCard
-                href={simple.path}
-                eyebrow="빠른 검사"
-                title={simple.name}
-                body={FAMILY_BLURB[family].simple}
-                count={`${simple.questions.length}문항 · ${simple.minutes}`}
-                delay={`${i * 60}ms`}
-              />
-              <CalcCard
-                href={deep.path}
-                eyebrow="심화 진단"
-                title={deep.name}
-                body={FAMILY_BLURB[family].deep}
-                count={`${deep.questions.length}문항 · ${deep.minutes}`}
-                delay={`${i * 60 + 30}ms`}
-              />
-            </div>
-          </div>
-        );
-      })
-    }
+    <div class="mt-10 grid gap-4 lg:grid-cols-3">
+      {
+        FAMILIES.map((family, i) => {
+          const { simple, deep } = pair(family);
+          return (
+            <CalcCard
+              href={`/${family}`}
+              eyebrow={FAMILY_LABEL[family]}
+              title={simple.name}
+              body={FAMILY_BLURB[family].simple}
+              count={`빠른 검사 ${simple.questions.length}문항 · 심화 진단 ${deep.questions.length}문항`}
+              delay={`${i * 60}ms`}
+            />
+          );
+        })
+      }
+    </div>
   </section>
 
   <section class="mx-auto grid max-w-7xl gap-12 px-5 pt-24 sm:px-8 sm:pt-32 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-20 lg:px-10" aria-labelledby="how">

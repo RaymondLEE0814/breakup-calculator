@@ -1,0 +1,85 @@
+---
+import Base from '../../layouts/Base.astro';
+import Quiz from '../../components/Quiz.astro';
+import Faq from '../../components/Faq.astro';
+import { fault } from '../../lib/calc/fault';
+import { breadcrumbLd, faqLd, webAppLd } from '../../lib/site';
+
+const title = '이혼 과실(유책) 비율 계산기 | 재판상 이혼 사유로 정리해 보기';
+const description =
+  '민법 제840조의 재판상 이혼 사유를 기준으로, 혼인 파탄의 책임이 나와 상대 중 어느 쪽에 얼마나 실려 있는지 정리해 봅니다. 12문항 5분, 무료. 위자료 금액은 산출하지 않습니다.';
+
+const faq = [
+  {
+    q: '이 결과가 재판에서 그대로 인정되나요?',
+    a: '아닙니다. 이것은 응답을 정리한 것이지 법률 판단이 아닙니다. 실제 재판에서 파탄의 책임은 양쪽의 주장과 증거를 바탕으로 판단되며, 같은 사정이라도 증거가 있는지에 따라 결론이 달라질 수 있습니다.',
+  },
+  {
+    q: '위자료가 얼마나 나올지 알 수 있나요?',
+    a: '알 수 없고, 이 도구는 금액을 산출하지 않습니다. 위자료는 파탄의 책임 정도, 혼인 기간, 당사자의 사정 등을 종합해 정해진다고 알려져 있으며, 구체적인 금액은 변호사와 상담하셔야 합니다.',
+  },
+  {
+    q: '왜 내 잘못까지 묻나요?',
+    a: '상대의 잘못만 묻는 계산기는 분쟁을 부추기고 정확하지도 않기 때문입니다. 재판에서도 한쪽의 사정만 보지 않습니다. 이 계산기는 같은 항목을 양쪽에 대해 같은 문장으로 묻고, 그 정도와 방향을 나눠 집계합니다.',
+  },
+  {
+    q: '유책배우자는 이혼을 못 하나요?',
+    a: '혼인 파탄에 주된 책임이 있는 배우자의 이혼 청구는 원칙적으로 제한된다는 것이 일반적인 법리입니다. 다만 예외가 인정되는 경우가 있으며, 어느 쪽에 해당하는지는 사안에 따라 다릅니다.',
+  },
+  {
+    q: '답변이 저장되나요?',
+    a: '저장되지 않습니다. 계산은 기기 안에서만 이루어지고, 이 계산기는 결과 공유 링크도 만들지 않습니다.',
+  },
+];
+
+const schemas = [
+  webAppLd({ name: fault.name, path: '/divorce/fault', description }),
+  faqLd(faq),
+  breadcrumbLd([
+    { name: '홈', path: '/' },
+    { name: '이혼 확률 계산기', path: '/divorce' },
+    { name: '과실 비율 계산기', path: '/divorce/fault' },
+  ]),
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  path="/divorce/fault"
+  og="/og/divorce.png"
+  schemas={schemas}
+>
+  <div class="pt-12 pb-8 sm:pt-16">
+    <Quiz config={fault} />
+
+    <div id="quiz-aside" class="mx-auto max-w-3xl px-5 sm:px-8">
+      <section class="mt-20" aria-labelledby="fault-about">
+        <h2 id="fault-about" class="text-[1.75rem]">이 계산기가 보는 것</h2>
+        <div class="prose-quiet mt-4">
+          <p>
+            민법 제840조는 재판상 이혼 사유를 여섯 가지로 정하고 있습니다 — 배우자의 부정한 행위,
+            악의의 유기, 배우자 또는 그 직계존속에 의한 심히 부당한 대우, 자기의 직계존속에 대한
+            배우자의 심히 부당한 대우, 3년 이상의 생사불명, 그 밖에 혼인을 계속하기 어려운 중대한
+            사유입니다.
+          </p>
+          <p>
+            이 계산기는 이 중 생사불명을 제외한 다섯 범주를 열두 문항으로 나눠 묻습니다. 문항마다 그런
+            일이 어느 정도였는지를 묻고, 있었다고 답하신 경우에만 그것이 주로 어느 쪽이었는지를
+            이어서 묻습니다. 두 답이 합쳐져 각 사유의 책임이 양쪽에 나뉩니다.
+          </p>
+          <p>
+            <strong>하지 않는 것도 분명히 해 둡니다.</strong> 위자료나 재산분할 금액을 산출하지 않고,
+            승소 가능성을 말하지 않으며, 증거를 어떻게 모으라는 조언도 하지 않습니다. 그것들은 이
+            도구가 할 수 있는 일이 아니고, 변호사와 상담할 영역입니다.
+          </p>
+        </div>
+      </section>
+
+      <section class="mt-20 border-t border-rule pt-10" aria-labelledby="fault-faq">
+        <h2 id="fault-faq" class="text-[1.75rem]">자주 묻는 질문</h2>
+        <Faq items={faq} />
+      </section>
+    </div>
+  </div>
+</Base>

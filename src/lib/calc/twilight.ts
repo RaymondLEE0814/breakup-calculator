@@ -15,7 +15,7 @@ export const twilight: CalcConfig = {
   family: 'twilight',
   depth: 'simple',
   modelVersion: 2,
-  path: '/twilight',
+  path: '/twilight/quick',
   name: '황혼 이혼 계산기',
   title: '황혼 이혼 계산기',
   minutes: '약 1분',

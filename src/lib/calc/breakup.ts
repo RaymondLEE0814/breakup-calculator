@@ -15,7 +15,7 @@ export const breakup: CalcConfig = {
   family: 'breakup',
   depth: 'simple',
   modelVersion: 2,
-  path: '/breakup',
+  path: '/breakup/quick',
   name: '헤어질 확률 계산기',
   title: '헤어질 확률 계산기',
   minutes: '약 1분',

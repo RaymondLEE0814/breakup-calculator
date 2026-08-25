@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import CalcHub from '../../components/CalcHub.astro';
+import CalculatorScreen from '../../components/CalculatorScreen.astro';
 import { twilight, twilightDeep } from '../../lib/calc';
 import { breadcrumbLd, faqLd, webAppLd } from '../../lib/site';
 
@@ -9,10 +9,6 @@ const description =
   '일곱 개의 질문으로 오래 함께한 부부의 지금을 빠르게 확인합니다. 무엇이 이 결혼을 유지해 왔는지 — 마음인지 조건인지 — 를 묻는 문항이 핵심입니다. 무료, 회원가입 없음, 1분.';
 
 const faq = [
-  {
-    q: '기본 검사와 심화 진단 중 무엇을 해야 하나요?',
-    a: '처음이라면 1분짜리 빠른 검사로 시작하시면 됩니다. 빠른 검사는 위험 신호가 있는지를 훑는 선별 검사이고, 심화 진단은 그 신호가 어디에서 오는지를 구조로 나눠 보는 검사입니다. 빠른 검사 결과가 30을 넘거나, 결과에 ±7의 폭이 답답하게 느껴진다면 심화 진단으로 이어 가시길 권합니다.',
-  },
   {
     q: '황혼 이혼 계산기는 다른 계산기와 무엇이 다른가요?',
     a: '핵심 문항이 다릅니다. "이 결혼을 유지해 온 이유"를 묻는 문항 하나가 이 검사에서 가장 많은 정보를 줍니다. 30년을 함께 살았다는 것은 지속의 기록이지 안정의 증거가 아니고, 마음이 아니라 조건이 지탱해 온 관계는 그 조건이 사라질 때 함께 흔들리기 때문입니다.',
@@ -44,23 +40,8 @@ const reading = [
   },
 ];
 
-
-const extraLinks = [
-  {
-    href: '/divorce/fault',
-    title: '이혼 과실(유책) 비율 계산기',
-    blurb: '파탄의 책임이 나와 상대 중 어느 쪽에 얼마나 실려 있는지 정리해 봅니다.',
-  },
-];
-
-const blurbs = {
-  simple: '은퇴 이후, 하루 종일 마주하게 된 두 사람이라면. 일곱 문항으로 지금의 온도를 재어 봅니다.',
-  deep: '남고 싶은 마음과 떠나기 어려운 조건을 나눠 재고, 은퇴·돌봄·노후자금의 압력을 함께 봅니다.',
-};
-
 const schemas = [
-  webAppLd({ name: twilight.name, path: '/twilight/quick', description }),
-  webAppLd({ name: twilightDeep.name, path: '/twilight/deep', description: twilightDeep.intro }),
+  webAppLd({ name: twilight.name, path: '/twilight', description }),
   faqLd(faq),
   breadcrumbLd([
     { name: '홈', path: '/' },
@@ -72,18 +53,11 @@ const schemas = [
 <Base
   title={title}
   description={description}
-  path="/twilight"
+  path="/twilight/quick"
   og="/og/twilight.png"
   schemas={schemas}
 >
   <div class="pt-12 pb-8 sm:pt-16">
-    <CalcHub
-      simple={twilight}
-      deep={twilightDeep}
-      blurbs={blurbs}
-      faq={faq}
-      reading={reading}
-      extraLinks={extraLinks}
-    />
+    <CalculatorScreen config={twilight} faq={faq} reading={reading} sibling={twilightDeep} />
   </div>
 </Base>

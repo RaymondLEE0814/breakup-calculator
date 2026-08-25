@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import CalcHub from '../../components/CalcHub.astro';
+import CalculatorScreen from '../../components/CalculatorScreen.astro';
 import { divorce, divorceDeep } from '../../lib/calc';
 import { breadcrumbLd, faqLd, webAppLd } from '../../lib/site';
 
@@ -9,10 +9,6 @@ const description =
   '일곱 개의 질문으로 지금 결혼 생활의 위험 신호를 빠르게 확인합니다. 결혼 만족도, 경멸과 회피, 헌신, 그리고 이혼을 향해 실제로 움직인 거리를 묻습니다. 무료, 회원가입 없음, 1분.';
 
 const faq = [
-  {
-    q: '기본 검사와 심화 진단 중 무엇을 해야 하나요?',
-    a: '처음이라면 1분짜리 빠른 검사로 시작하시면 됩니다. 빠른 검사는 위험 신호가 있는지를 훑는 선별 검사이고, 심화 진단은 그 신호가 어디에서 오는지를 구조로 나눠 보는 검사입니다. 빠른 검사 결과가 30을 넘거나, 결과에 ±7의 폭이 답답하게 느껴진다면 심화 진단으로 이어 가시길 권합니다.',
-  },
   {
     q: '일곱 문항짜리 이혼 확률 계산기를 믿어도 되나요?',
     a: '이것은 확률이 아니라 선별 검사입니다. 그래서 결과에 ±7의 폭을 함께 표시합니다. 다만 일곱 문항 중 셋은 결혼 만족도 표준 척도의 구조를, 둘은 관계 연구에서 예측력이 가장 잘 알려진 상호작용 패턴을 가져온 것이라 짧은 것치고는 정보 밀도가 높습니다.',
@@ -48,23 +44,8 @@ const reading = [
   },
 ];
 
-
-const extraLinks = [
-  {
-    href: '/divorce/fault',
-    title: '이혼 과실(유책) 비율 계산기',
-    blurb: '파탄의 책임이 나와 상대 중 어느 쪽에 얼마나 실려 있는지 정리해 봅니다.',
-  },
-];
-
-const blurbs = {
-  simple: '말수가 줄고 같은 문제로 반복해서 부딪히고 있다면. 결혼 만족, 오가는 말, 이혼을 향해 움직인 거리를 1분 만에 봅니다.',
-  deep: '무엇이 이 결혼을 붙잡고 있는지 — 마음인지, 조건인지 — 를 따로 재고, 돈·자녀·양가의 압력이 어디로 새어 들어오는지 봅니다.',
-};
-
 const schemas = [
-  webAppLd({ name: divorce.name, path: '/divorce/quick', description }),
-  webAppLd({ name: divorceDeep.name, path: '/divorce/deep', description: divorceDeep.intro }),
+  webAppLd({ name: divorce.name, path: '/divorce', description }),
   faqLd(faq),
   breadcrumbLd([
     { name: '홈', path: '/' },
@@ -76,18 +57,11 @@ const schemas = [
 <Base
   title={title}
   description={description}
-  path="/divorce"
+  path="/divorce/quick"
   og="/og/divorce.png"
   schemas={schemas}
 >
   <div class="pt-12 pb-8 sm:pt-16">
-    <CalcHub
-      simple={divorce}
-      deep={divorceDeep}
-      blurbs={blurbs}
-      faq={faq}
-      reading={reading}
-      extraLinks={extraLinks}
-    />
+    <CalculatorScreen config={divorce} faq={faq} reading={reading} sibling={divorceDeep} />
   </div>
 </Base>

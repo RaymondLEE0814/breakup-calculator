@@ -1,6 +1,9 @@
 import { SAFETY_TRIGGER_INDEX } from './scales.ts';
 import type {
   AnswerMap,
+  FaultConfig,
+  FaultResult,
+  FaultSideDim,
   CalcConfig,
   CalcResult,
   DimResult,
@@ -184,7 +187,11 @@ export function calcRiskIndex(config: CalcConfig, answers: AnswerMap): CalcResul
 }
 
 /** Swap {상대}/{배우자} for the noun matching the chosen perspective. */
-export function withPronoun(text: string, config: CalcConfig, p: Perspective): string {
+export function withPronoun(
+  text: string,
+  config: { pronoun: Record<Perspective, string> },
+  p: Perspective,
+): string {
   return text.replace(/\{(?:상대|배우자)\}/g, config.pronoun[p]);
 }
 
@@ -196,4 +203,119 @@ export function allQuestions(config: CalcConfig): Question[] {
 /** True once every scored question has an answer. */
 export function isComplete(config: CalcConfig, answers: AnswerMap): boolean {
   return allQuestions(config).every((q) => typeof answers[q.id] === 'number');
+}
+
+/**
+ * Score the fault calculator.
+ *
+ * Deliberately not `calcRiskIndex`. That function produces a 5–85 index off a
+ * logistic curve, and the curve exists to keep an absolute risk score from
+ * reading like a probability. A split between two people is already bounded
+ * and already relative; pushing it through a logistic would distort the input
+ * without buying any of the restraint. The restraint here comes from
+ * elsewhere: five-point rounding, a qualitative band, and refusing to report
+ * a ratio at all when almost nothing was reported.
+ *
+ * Each question's points are divided between the two people by the direction
+ * answer. An unanswered direction splits evenly — the UI requires one, so this
+ * only matters for a truncated session.
+ */
+export function scoreFault(config: FaultConfig, answers: AnswerMap): FaultResult {
+  const dims: FaultSideDim[] = [];
+  let threatReported = false;
+
+  for (const dim of config.dims) {
+    const questions = config.questions.filter((q) => q.dim === dim.key);
+    const total = questions.reduce((sum, q) => sum + maxScore(q), 0);
+    let self = 0;
+    let spouse = 0;
+
+    for (const q of questions) {
+      const picked = q.choices[answers[q.id] ?? -1];
+      if (!picked || picked.score === 0) continue;
+      const direction = q.direction.choices[answers[q.direction.id] ?? -1];
+      const share = direction ? direction.selfShare : 0.5;
+      self += picked.score * share;
+      spouse += picked.score * (1 - share);
+    }
+
+    dims.push({
+      key: dim.key,
+      label: dim.label,
+      weight: dim.weight,
+      self: total === 0 ? 0 : (self / total) * 100,
+      spouse: total === 0 ? 0 : (spouse / total) * 100,
+    });
+  }
+
+  // A threat item answered at 2 or above puts a safety line on the result,
+  // whatever the split says.
+  for (const q of config.questions) {
+    if (!q.factor?.startsWith('FAULT_THREAT')) continue;
+    const picked = answers[q.id];
+    if (typeof picked === 'number' && (q.choices[picked]?.score ?? 0) >= 2) threatReported = true;
+  }
+
+  const selfScore = dims.reduce((sum, d) => sum + d.self * d.weight, 0);
+  const spouseScore = dims.reduce((sum, d) => sum + d.spouse * d.weight, 0);
+  const total = selfScore + spouseScore;
+  const undecided = total < config.minReportable;
+
+  let selfRatio: number | null = null;
+  let spouseRatio: number | null = null;
+  let band: FaultResult['band'] = null;
+
+  if (!undecided) {
+    // Rounded to five so the number never implies precision it does not have.
+    spouseRatio = Math.round((spouseScore / total) * 20) * 5;
+    selfRatio = 100 - spouseRatio;
+    const lean = Math.max(selfRatio, spouseRatio);
+    band = lean >= 90 ? 'lopsided' : lean >= 70 ? 'clear' : lean >= 56 ? 'leaning' : 'even';
+  }
+
+  const safetyAnswer = config.safety ? answers[config.safety.id] : undefined;
+
+  return {
+    selfScore,
+    spouseScore,
+    selfRatio,
+    spouseRatio,
+    undecided,
+    band,
+    dims: dims.map((d) => ({ ...d, self: Math.round(d.self), spouse: Math.round(d.spouse) })),
+    safetyTriggered: safetyAnswer === SAFETY_TRIGGER_INDEX,
+    threatReported,
+  };
+}
+
+/**
+ * The questions actually on screen, in order.
+ *
+ * A direction question only exists once its parent reports that something
+ * happened. Asking who was responsible for an event the respondent just said
+ * never occurred is both noise and, in a form about blame, faintly insulting.
+ */
+export function faultSequence(config: FaultConfig, answers: AnswerMap): Question[] {
+  const out: Question[] = config.safety ? [config.safety] : [];
+  for (const q of config.questions) {
+    out.push(q);
+    const picked = q.choices[answers[q.id] ?? -1];
+    if (picked && picked.score > 0) {
+      // The direction answer carries a share, not points, so it is presented
+      // as a zero-scored question and read back by scoreFault directly.
+      out.push({
+        id: q.direction.id,
+        text: q.direction.text,
+        dim: q.dim,
+        step: q.step,
+        choices: q.direction.choices.map((c) => ({ label: c.label, score: 0 })),
+      });
+    }
+  }
+  return out;
+}
+
+/** True once every visible fault question has an answer. */
+export function isFaultComplete(config: FaultConfig, answers: AnswerMap): boolean {
+  return faultSequence(config, answers).every((q) => typeof answers[q.id] === 'number');
 }

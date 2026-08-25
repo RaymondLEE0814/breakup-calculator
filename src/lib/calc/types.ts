@@ -196,6 +196,75 @@ export interface CalcConfig {
   safety?: Question;
 }
 
+/**
+ * A fault question asks the same event twice: how far it went, and which side
+ * it came from. The direction half only appears when the degree half scored
+ * above zero — there is no point asking who was responsible for something that
+ * never happened.
+ */
+export interface DirectionChoice {
+  label: string;
+  /** Share of this question's points attributed to the respondent, 0–1. */
+  selfShare: number;
+}
+
+export interface DirectionQuestion {
+  id: string;
+  text: string;
+  choices: DirectionChoice[];
+}
+
+export interface FaultQuestion extends Question {
+  direction: DirectionQuestion;
+}
+
+/**
+ * The fault calculator is not a risk calculator. It shares the question and
+ * dimension machinery, but it produces a split between two people rather than
+ * an index, so the terms that only make sense for a risk index — mediation,
+ * interaction, flags, typology, the logistic band — are omitted outright.
+ */
+export interface FaultConfig
+  extends Omit<
+    CalcConfig,
+    'type' | 'questions' | 'mediation' | 'interactions' | 'flags' | 'types' | 'band'
+  > {
+  type: 'fault';
+  questions: FaultQuestion[];
+  /**
+   * Below this combined score the split is not reported. A ratio between two
+   * near-zero numbers is noise, and printing it would invite a fight over
+   * nothing.
+   */
+  minReportable: number;
+}
+
+export interface FaultSideDim {
+  key: DimKey;
+  label: string;
+  weight: number;
+  /** 0–100 for each side. */
+  self: number;
+  spouse: number;
+}
+
+export interface FaultResult {
+  /** Weighted 0–100 per side. */
+  selfScore: number;
+  spouseScore: number;
+  /** Percent of the reported fault, rounded to 5, or null when not reportable. */
+  selfRatio: number | null;
+  spouseRatio: number | null;
+  /** True when too little was reported to split anything. */
+  undecided: boolean;
+  /** One of 'even' | 'leaning' | 'clear' | 'lopsided', or null when undecided. */
+  band: 'even' | 'leaning' | 'clear' | 'lopsided' | null;
+  dims: FaultSideDim[];
+  safetyTriggered: boolean;
+  /** True when a threat item was answered at 2 or above. */
+  threatReported: boolean;
+}
+
 /** questionId -> chosen choice index. */
 export type AnswerMap = Record<string, number>;
 
