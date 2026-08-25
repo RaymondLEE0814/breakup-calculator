@@ -15,13 +15,16 @@
 src/
   lib/calc/          계산 모델 — 여기가 원본이다
     types.ts         공통 타입
-    engine.ts        순수 채점 함수, 로지스틱 매핑, 등급, top 요인
-    breakup.ts       연인 16문항
-    divorce.ts       부부 18문항
-    twilight.ts      황혼 15문항
-    factors.ts       문항별 결과 카피 + 등급 카피
+    scales.ts        공용 응답 척도(5점 리커트, 역채점) + 안전 문항
+    engine.ts        순수 채점 함수, 매개·상호작용 항, 위험 하한, 유형 분류
+    breakup.ts       연애 심플 7문항      breakup-deep.ts   연애 심화 33문항
+    divorce.ts       부부 심플 7문항      divorce-deep.ts   부부 심화 34문항
+    twilight.ts      황혼 심플 7문항      twilight-deep.ts  황혼 심화 32문항
+    factors.ts       v1 결과 카피(문항 id 키) + 등급 카피
+    factors-v2.ts    v2 결과 카피(구성개념 키)
   lib/site.ts        메타·JSON-LD 빌더
   lib/share.ts       Supabase 읽기/쓰기 (키가 없으면 공유 기능만 꺼진다)
+  lib/shared-registry.ts  구모델 공유 링크를 계속 렌더하기 위한 라벨 레지스트리
   lib/storage.ts     sessionStorage
   lib/result-view.ts 결과 렌더 헬퍼 (본인용/공유용 공통)
   components/        Quiz, Result, 헤더/푸터 등
@@ -31,12 +34,20 @@ worker/index.js      /r/{slug} 라우팅과 404 처리
 scripts/build-og.mjs OG 이미지 생성 (수동 실행, 결과물은 커밋)
 scripts/clean.mjs    빌드 전 dist 정리 — 아래 "윈도우 주의" 참조
 supabase/migrations/ 스키마
-docs/PLAN.md         기획서 (판단과 근거)
+docs/PLAN.md         v1 기획서 (보존)
+docs/PLAN-V2.md      현행 기획서 — 여섯 계산기의 이론 근거와 계산식
 ```
 
 **문항이나 배점을 바꾸려면** `src/lib/calc/*.ts`만 고치면 됩니다. `/about` 페이지, 계산기 페이지의
 문항 목록, 결과 계산이 모두 같은 config에서 나오므로 화면과 문서가 어긋나지 않습니다. 문항을 새로
-추가할 때는 `factors.ts`의 `FACTOR_COPY`에도 항목을 추가하세요 — 빠지면 테스트가 잡습니다.
+추가할 때는 `factors-v2.ts`에 그 문항의 `factor` 키가 있어야 합니다 — 빠지면 테스트가 잡습니다.
+
+계산 모델은 데이터로 표현됩니다: 차원 가중치, 매개 항(`mediation`), 상호작용 항(`interactions`),
+위험 하한(`flags`), 유형 분류(`types`) 전부 config 객체의 필드입니다. 엔진은 그 위를 도는 순수
+함수이므로, 모델을 바꾸면서 엔진을 고칠 일은 거의 없습니다. 자세한 배경은 `docs/PLAN-V2.md`.
+
+calc 디렉터리 안의 상대 임포트에는 `.ts` 확장자가 붙어 있습니다. `npm test`가 번들러 없이 Node로
+이 파일들을 직접 불러오기 때문입니다.
 
 ## 개발
 

@@ -1,0 +1,36 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Result from '../../../components/Result.astro';
+import NextLink from '../../../components/NextLink.astro';
+import { twilightDeep } from '../../../lib/calc';
+---
+
+<Base
+  title="황혼 부부 심화 진단 결과"
+  description="답변을 바탕으로 계산한 관계 위험 지수와 구조별 프로파일입니다."
+  path="/twilight/deep/result"
+  noindex
+>
+  <Result config={twilightDeep}>
+    <Fragment slot="next">
+      <NextLink
+        href="/guide/twilight-divorce"
+        eyebrow="가이드"
+        title="황혼이혼은 왜 늘어날까"
+        blurb="헌신과 제약이 갈리는 지점을 다룬 글."
+      />
+      <NextLink
+        href="/guide/four-horsemen"
+        eyebrow="가이드"
+        title="이혼을 예측하는 4가지 대화 습관"
+        blurb="오래된 부부일수록 말투는 습관이 됩니다."
+      />
+      <NextLink
+        href="/divorce/deep"
+        eyebrow="다른 진단"
+        title="부부 관계 심화 진단"
+        blurb="아직 은퇴 전이라면 이쪽이 더 잘 맞습니다."
+      />
+    </Fragment>
+  </Result>
+</Base>

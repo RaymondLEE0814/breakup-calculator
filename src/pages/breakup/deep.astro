@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import CalculatorScreen from '../../components/CalculatorScreen.astro';
+import { breakup, breakupDeep } from '../../lib/calc';
+import { breadcrumbLd, faqLd, webAppLd } from '../../lib/site';
+
+const title = '연애 관계 심화 진단 | 33문항 커플 관계 테스트';
+const description =
+  '33개 문항으로 지금의 연애를 일곱 개 구조로 나눠 봅니다. 만족, 대안의 매력, 쌓아 온 투자, 헌신, 갈등 과정, 애착 방식, 바깥의 압력. 투자모형과 관계 연구에 기반한 무료 심화 진단.';
+
+const faq = [
+  {
+    q: '빠른 검사와 무엇이 다른가요?',
+    a: '다른 도구입니다. 일곱 문항짜리는 위험 신호를 걸러내는 선별 검사이고, 이 검사는 구조를 나눠 보는 진단 검사입니다. 두 결과가 다르게 나올 수 있으며, 그럴 때는 이쪽이 더 많은 정보를 담고 있습니다.',
+  },
+  {
+    q: '"대안의 매력"이 무엇인가요?',
+    a: '헤어진 뒤의 생활이 얼마나 매력적으로 보이는지입니다. 미혼 관계에는 재산이나 절차 같은 제도적 장벽이 없어서, 남는 것은 심리적 계산 — 만족스러운가, 떠나면 더 나은가, 쌓아 둔 것이 아까운가 — 이고 이 세 가지가 헌신을 거쳐 관계의 지속을 결정한다는 것이 투자모형의 설명입니다.',
+  },
+  {
+    q: '헌신 점수가 제가 답한 것과 다르게 나왔습니다.',
+    a: '의도된 동작입니다. 헌신은 응답하신 값 절반과, 만족·대안·투자가 함의하는 값 절반을 합쳐 계산합니다. "계속할 마음이 있다"고 답해도 만족이 낮고 대안이 매력적이면 헌신 점수는 그 사이 어딘가로 조정됩니다. 결과 화면에 응답값과 보정값을 모두 표시합니다.',
+  },
+  {
+    q: '유형 분류는 어떻게 정해지나요?',
+    a: '만족과 헌신 두 축을 각각 50을 기준으로 나눠 네 가지 유형(동행형·표류형·관성형·갈림길형) 중 하나로 분류합니다. 유형은 등급과 별개이며, 같은 지수라도 유형이 다르면 필요한 대응이 다릅니다.',
+  },
+  {
+    q: '답변이 저장되나요?',
+    a: '저장되지 않습니다. 계산은 기기 안에서만 이루어집니다. 시작 전 안전 확인 문항의 답변은 어떤 경우에도 저장되거나 공유되지 않습니다.',
+  },
+];
+
+const reading = [
+  {
+    href: '/guide/signs-of-breakup',
+    title: '헤어지는 커플의 7가지 신호',
+    blurb: '이 검사의 갈등 과정 축이 무엇을 보는지 정리했습니다.',
+  },
+  {
+    href: '/guide/gwontaegi',
+    title: '권태기, 끝의 신호일까 과정일까',
+    blurb: '만족은 내려갔는데 헌신은 남아 있을 때 읽어볼 글.',
+  },
+];
+
+const schemas = [
+  webAppLd({ name: breakupDeep.name, path: '/breakup/deep', description }),
+  faqLd(faq),
+  breadcrumbLd([
+    { name: '홈', path: '/' },
+    { name: '헤어질 확률 계산기', path: '/breakup' },
+    { name: '연애 관계 심화 진단', path: '/breakup/deep' },
+  ]),
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  path="/breakup/deep"
+  og="/og/breakup.png"
+  schemas={schemas}
+>
+  <div class="pt-12 pb-8 sm:pt-16">
+    <CalculatorScreen config={breakupDeep} faq={faq} reading={reading} sibling={breakup} />
+  </div>
+</Base>

@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import CalculatorScreen from '../../components/CalculatorScreen.astro';
+import { twilight, twilightDeep } from '../../lib/calc';
+import { breadcrumbLd, faqLd, webAppLd } from '../../lib/site';
+
+const title = '황혼 부부 심화 진단 | 32문항 졸혼·황혼이혼 테스트';
+const description =
+  '32개 문항으로 오래 함께한 두 사람을 일곱 개 구조로 나눠 봅니다. 이 결혼을 지탱하는 것이 마음인지 조건인지를 따로 재고, 은퇴·돌봄·노후자금의 압력을 함께 봅니다. 무료 심화 진단.';
+
+const faq = [
+  {
+    q: '헌신과 제약을 왜 따로 재나요?',
+    a: '황혼 이혼의 전형적인 구조가 거기에 있기 때문입니다. 마음이 아니라 조건 — 자녀, 주변의 시선, 혼자 살 자신 없음 — 이 지탱해 온 관계는 그 조건이 하나씩 사라지는 시점에 무너집니다. 두 값을 합산하면 이 구조가 보이지 않고, 나눠서 격차를 계산해야만 드러납니다.',
+  },
+  {
+    q: '아직 은퇴 전인데 해도 되나요?',
+    a: '가능합니다. 은퇴 관련 문항에는 "아직 둘 다 은퇴 전이다" 선택지가 있고, 이 경우 점수가 붙지 않습니다. 다만 자녀 독립과 노후 자금 문항이 많으므로, 해당하지 않는 시기라면 부부 관계 심화 진단이 더 잘 맞습니다.',
+  },
+  {
+    q: '유형 분류는 어떻게 정해지나요?',
+    a: '헌신과 제약 두 축을 각각 50을 기준으로 나눠 네 가지(동반자형·책임동행형·각자생활형·형식유지형) 중 하나로 분류합니다. 특히 형식유지형은 지수와 무관하게 시간이 지날수록 위험해지는 구조라 따로 설명을 드립니다.',
+  },
+  {
+    q: '돌봄 부담이 큰 상황입니다. 결과가 나쁘게 나오나요?',
+    a: '한 사람에게 부담이 몰려 있다면 점수가 붙습니다. 애정이 부족해서가 아니라 체력의 문제이고, 방치하면 원망으로 바뀌기 때문입니다. 결과 화면에서는 마음가짐이 아니라 분담 구조를 바꾸는 쪽을 제안합니다.',
+  },
+  {
+    q: '답변이 저장되나요?',
+    a: '저장되지 않습니다. 계산은 기기 안에서만 이루어지며, 시작 전 안전 확인 문항의 답변은 어떤 경우에도 저장되거나 공유되지 않습니다.',
+  },
+];
+
+const reading = [
+  {
+    href: '/guide/twilight-divorce',
+    title: '황혼이혼은 왜 늘어날까',
+    blurb: '이 검사가 재는 은퇴·돌봄·자녀 독립의 배경.',
+  },
+  {
+    href: '/guide/four-horsemen',
+    title: '이혼을 예측하는 4가지 대화 습관',
+    blurb: '오래된 부부일수록 말투는 습관이 됩니다.',
+  },
+];
+
+const schemas = [
+  webAppLd({ name: twilightDeep.name, path: '/twilight/deep', description }),
+  faqLd(faq),
+  breadcrumbLd([
+    { name: '홈', path: '/' },
+    { name: '황혼 이혼 계산기', path: '/twilight' },
+    { name: '황혼 부부 심화 진단', path: '/twilight/deep' },
+  ]),
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  path="/twilight/deep"
+  og="/og/twilight.png"
+  schemas={schemas}
+>
+  <div class="pt-12 pb-8 sm:pt-16">
+    <CalculatorScreen config={twilightDeep} faq={faq} reading={reading} sibling={twilight} />
+  </div>
+</Base>

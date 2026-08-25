@@ -40,8 +40,17 @@ import Base from '../../layouts/Base.astro';
         화면에도 표시되지 않습니다.
       </p>
 
+      <p
+        id="shared-legacy"
+        class="mt-3 rounded-xl border border-rule p-4 text-[0.875rem] leading-relaxed text-ink-faint"
+        hidden
+      >
+        이 결과는 이전 버전 검사로 측정되었습니다. 현재 검사는 문항과 계산 방식이 다르므로, 지금
+        다시 해보시면 숫자가 달라질 수 있습니다.
+      </p>
+
       <section class="mt-14 border-t border-rule pt-8">
-        <h2 class="text-[1.5rem]">네 가지 축으로 보면</h2>
+        <h2 class="text-[1.5rem]">구조로 나눠 보면</h2>
         <dl id="shared-axes" class="mt-7 flex flex-col gap-5"></dl>
       </section>
 
@@ -77,11 +86,11 @@ import Base from '../../layouts/Base.astro';
 </Base>
 
 <script>
-  import { CONFIGS } from '../../lib/calc';
   import { GRADE_COPY } from '../../lib/calc/factors';
-  import type { AxisResult, CalcType, Grade } from '../../lib/calc/types';
+  import type { Grade } from '../../lib/calc/types';
   import { fetchShared } from '../../lib/share';
-  import { countUp, renderAxes, toneClasses } from '../../lib/result-view';
+  import { viewFor } from '../../lib/shared-registry';
+  import { countUp, renderDims, toneClasses } from '../../lib/result-view';
 
   const state = document.getElementById('shared-state')!;
   const missing = document.getElementById('shared-missing')!;
@@ -103,16 +112,19 @@ import Base from '../../layouts/Base.astro';
           return;
         }
 
-        const config = CONFIGS[row.calc_type as CalcType];
+        // A row written by an older build carries its own label set; the
+        // registry hands back whichever one applies.
+        const view = viewFor(row);
         const grade = GRADE_COPY[row.grade as Grade];
-        if (!config || !grade) {
+        if (!view || !grade) {
           fail();
           return;
         }
 
         state.hidden = true;
         document.getElementById('shared-body')!.hidden = false;
-        document.getElementById('shared-kind')!.textContent = config.name;
+        document.getElementById('shared-kind')!.textContent = view.name;
+        if (view.legacy) document.getElementById('shared-legacy')!.hidden = false;
 
         const badge = document.getElementById('shared-badge')!;
         badge.textContent = grade.name;
@@ -120,20 +132,11 @@ import Base from '../../layouts/Base.astro';
         document.getElementById('shared-headline')!.textContent = grade.headline;
 
         countUp(document.getElementById('shared-index')!, row.risk_index);
-
-        // Rebuild the axis rows in the config's declared order so a stored
-        // result always reads in the same sequence as a fresh one.
-        const axes: AxisResult[] = config.axes.map((axis) => ({
-          key: axis.key,
-          label: axis.label,
-          weight: axis.weight,
-          value: Number(row.axis_scores?.[axis.key] ?? 0),
-        }));
-        renderAxes(document.getElementById('shared-axes')!, axes);
+        renderDims(document.getElementById('shared-axes')!, view.dims);
 
         const cta = document.getElementById('shared-cta') as HTMLAnchorElement;
-        cta.href = config.path;
-        cta.textContent = `${config.name} 해보기`;
+        cta.href = view.path;
+        cta.textContent = `${view.name} 해보기`;
       })
       .catch(fail);
   }

@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
-import { CALC_TYPES, CONFIGS, GRADE_COPY, K, L, M, U, axisMax, maxScore } from '../lib/calc';
+import { CALC_TYPES, CONFIGS, GRADE_COPY, K, L, M, U, dimMax, maxScore } from '../lib/calc';
 import { breadcrumbLd } from '../lib/site';
 
 const title = '계산 방식 | 지수는 어떻게 만들어지나 | 이혼 확률 계산기';
 const description =
-  '문항별 배점, 축 가중치, 지수를 만드는 계산식, 등급 구간까지 이 계산기가 쓰는 모델 전체를 공개합니다. 무엇을 근거로 삼았고 무엇을 근거로 삼지 않았는지도 함께 적었습니다.';
+  '여섯 개 계산기의 문항별 배점, 차원 가중치, 매개·상호작용 항, 위험 하한, 등급 구간까지 모델 전체를 공개합니다. 무엇을 근거로 삼았고 무엇을 근거로 삼지 않았는지도 함께 적었습니다.';
 
 const bands = [
   { grade: 'stable', range: '5 - 29%' },
@@ -13,6 +13,8 @@ const bands = [
   { grade: 'caution', range: '50 - 67%' },
   { grade: 'warning', range: '68 - 85%' },
 ] as const;
+
+const pronounRe = /\{(?:상대|배우자)\}/g;
 
 const schemas = [
   breadcrumbLd([
@@ -23,82 +25,107 @@ const schemas = [
 ---
 
 <Base title={title} description={description} path="/about" schemas={schemas}>
-  <article class="mx-auto max-w-2xl px-5 pt-16 sm:px-8 sm:pt-20">
+  <article class="mx-auto max-w-3xl px-5 pt-16 sm:px-8 sm:pt-20">
     <p class="gutter-label">METHOD</p>
     <h1 class="mt-4 text-[2rem] leading-tight sm:text-[2.5rem]">지수는 어떻게 만들어지나</h1>
     <p class="mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
-      점수를 숨기는 계산기는 믿을 이유가 없습니다. 이 페이지에는 문항별 배점, 축 가중치, 계산식,
-      등급 구간까지 모델 전체가 그대로 적혀 있습니다.
+      점수를 숨기는 계산기는 믿을 이유가 없습니다. 이 페이지에는 여섯 개 계산기의 문항별 배점, 차원
+      가중치, 계산식, 등급 구간이 그대로 적혀 있습니다.
     </p>
 
     <div class="prose-quiet mt-12 border-t border-rule pt-8">
       <h2 class="!mt-0">이 수치는 확률이 아닙니다</h2>
       <p>
-        먼저 분명히 해둘 것이 있습니다. 결과로 나오는 숫자는 통계적으로 추정한 이별·이혼 확률이
-        아닙니다. 어떤 조건 조합에 대해 이별 확률을 알려주는 공식 통계는 존재하지 않으며, 그런 숫자를
-        제시하는 서비스가 있다면 근거를 확인해 보시길 권합니다.
+        결과로 나오는 숫자는 통계적으로 추정한 이별·이혼 확률이 아닙니다. 어떤 조건 조합에 대해 이별
+        확률을 알려주는 공식 통계는 존재하지 않으며, 그런 숫자를 제시하는 서비스가 있다면 근거를
+        확인해 보시길 권합니다.
       </p>
       <p>
         이 서비스가 계산하는 것은 <strong>관계 위험 지수</strong>입니다. 관계 연구에서 위험 신호로
-        알려진 항목에 답한 결과를 하나의 척도로 모은 값이고, 지금 상태에서 어느 쪽에 무게가 실려
-        있는지를 보는 용도입니다. 서비스 이름에 "확률"이 들어가는 것은 사람들이 그 말로 검색하기
-        때문이고, 결과 화면에서는 이 성격을 매번 다시 안내합니다.
+        알려진 항목에 답한 결과를 하나의 척도로 모은 값이고, 지금 어느 쪽에 무게가 실려 있는지를 보는
+        용도입니다. 서비스 이름에 "확률"이 들어가는 것은 사람들이 그 말로 검색하기 때문이고, 결과
+        화면에서는 이 성격을 매번 다시 안내합니다.
       </p>
 
-      <h2>무엇에 무게를 두었나</h2>
+      <h2>무엇이 검증되었고 무엇이 아닌가</h2>
       <p>
-        이별과 이혼을 실제로 예측하는 데 가장 힘이 있는 것은 조건이 아니라 <strong>관계 행동</strong>
-        입니다. 다툴 때의 말투, 비난과 경멸이 오가는지, 갈등 뒤 침묵의 길이, 화해 시도가 받아들여지는지
-        같은 항목입니다. 세 계산기 모두 이 축에 가장 큰 가중치를 둡니다.
+        문항의 구조는 관계과학에서 반복 검증된 측정도구와 이론 모형을 참고해 <strong
+          >새로 작성한 것</strong
+        >입니다. 구체적으로는 만족도 단축 척도의 문항 구성, 이혼을 향한 행동 단계 척도의 계단 구조,
+        비난·경멸·방어·담쌓기와 화해 시도 수용 같은 상호작용 관찰 변수, 투자모형(만족·대안·투자 →
+        헌신), 취약성-스트레스-적응 모형, 그리고 헌신과 제약을 나누어 보는 관점입니다. 저작권이 있는
+        문항을 옮긴 것이 아니라 한국 맥락에 맞게 새로 썼습니다.
       </p>
       <p>
-        나이 차이, 학력, 소득, 자산 같은 조건은 보조 변수로만 다룹니다. 그리고 <strong
-          >액수나 수치는 아예 입력받지 않습니다.</strong
-        > 얼마를 버는지가 아니라 그 문제로 다툰 적이 있는지를, 조건이 어떤지가 아니라 그 차이가 두 사람
-        사이에서 말로 나온 적이 있는지를 묻습니다. 사람을 조건으로 줄 세우는 계산은 이 서비스가 하려는
-        일이 아니고, 관계를 설명하는 방식으로도 정확하지 않습니다.
+        <strong>다만 이 검사 자체의 예측 타당도는 검증된 적이 없습니다.</strong> 항목의 선정에는 근거가
+        있지만, 각 선택지에 몇 점을 줄지와 차원마다 얼마의 가중치를 둘지는 저희의 설계 판단입니다.
+        아래 표의 숫자를 그렇게 읽어 주세요.
       </p>
 
-      <h2>근거 표기</h2>
+      <h2>측정 방식에서 바꾼 것</h2>
       <ul>
         <li>
-          <strong>관계 연구 기반</strong>: 비난·경멸·방어·담쌓기가 관계의 앞날을 예고하는 신호라는
-          부부 관계 연구의 널리 알려진 결과에 근거한 항목. 세 계산기의 최고 배점 문항이 여기에
-          해당합니다.
+          <strong>조건을 묻지 않습니다.</strong> 나이 차이, 교제·혼인 기간, 소득, 자산, 학력은 개별
+          커플 수준에서 예측력이 거의 없으면서 사람을 줄 세우는 인상만 남깁니다. 채점 문항에서 전부
+          뺐습니다.
         </li>
         <li>
-          <strong>통계 경향 반영</strong>: 통계청 이혼통계에서 반복해서 나타나는 경향(이혼 사유 중
-          성격 차이와 경제 문제의 비중, 혼인 4년 이하와 20년 이상 구간의 비중)을 반영한 항목.
+          <strong>상태가 아니라 장면을 묻습니다.</strong> "관계가 안정적인가요"가 아니라 "지난 한 달
+          동안 몇 번 있었나요", "그때 보통 어떻게 되나요"로 묻습니다. 어느 답이 정답인지 짐작하기
+          어렵게 만드는 것이 목적입니다.
         </li>
         <li>
-          <strong>연구 기반 휴리스틱</strong>: 직접적인 정량 근거 없이, 관계 연구의 일반적인 지식에서
-          설계자가 배점을 정한 항목. 나머지 대부분이 여기에 해당하며, 정확한 수치를 인용할 수 없는
-          항목은 모두 이쪽으로 분류했습니다.
+          <strong>절반은 역채점입니다.</strong> 동의 문항의 상당수는 긍정 진술로 쓰여 있어, 동의할수록
+          위험이 낮아집니다. 한쪽으로 죽 긋는 응답을 막기 위해서입니다.
+        </li>
+        <li>
+          <strong>양쪽 모두를 묻습니다.</strong> "내가 하든 상대가 하든"이라는 표현이 반복되는 것은,
+          자기 잘못을 인정하라는 압박을 없애기 위해서입니다.
         </li>
       </ul>
 
       <h2>계산식</h2>
-      <p>세 단계로 계산합니다.</p>
       <ol class="my-5 flex list-none flex-col gap-3 border-l-2 border-rule pl-5 text-ink-soft">
         <li>
-          <strong class="text-ink">1. 축 정규화</strong>: 축별로
-          <code class="nums">획득 점수 ÷ 축 만점 × 100</code>. 결과는 0~100입니다.
+          <strong class="text-ink">1. 차원 정규화</strong>: 차원별로
+          <code class="nums">획득 점수 ÷ 차원 만점 × 100</code>. 결과는 0~100입니다.
         </li>
         <li>
-          <strong class="text-ink">2. 가중합</strong>: 각 축의 값에 아래 표의 가중치를 곱해 더합니다.
-          이 값을 <code>S</code>라고 하며 0~100입니다.
+          <strong class="text-ink">2. 매개 보정</strong>: 연애 심화형만 해당합니다. 헌신을
+          <code class="nums">0.5 × 응답값 + 0.5 × (0.5×만족 + 0.3×대안 + 0.2×투자)</code>로 다시
+          계산합니다. 투자모형에서 만족·대안·투자는 헌신을 거쳐 관계 지속에 작용하기 때문입니다.
         </li>
         <li>
-          <strong class="text-ink">3. 로지스틱 변환</strong>:
+          <strong class="text-ink">3. 가중합</strong>: 각 차원 값에 아래 표의 가중치를 곱해 더합니다.
+        </li>
+        <li>
+          <strong class="text-ink">4. 상호작용 항</strong>:
+          <code class="nums">두 차원의 곱 ÷ 100</code>에 가중치를 곱해 더합니다. 압력은 대처가 나쁠
+          때만 파괴적이고, 제약은 헌신이 없을 때만 위험합니다. 덧셈으로는 표현할 수 없는 구조입니다. 이
+          값을 <code>S</code>라 하며 0~100입니다.
+        </li>
+        <li>
+          <strong class="text-ink">5. 로지스틱 변환</strong>:
           <code class="nums">R = {L} + ({U} − {L}) / (1 + e^(−{K} × (S − {M})))</code>
+        </li>
+        <li>
+          <strong class="text-ink">6. 위험 하한</strong>: 이별·이혼을 향해 실제로 움직인 단계를 묻는
+          문항은, 다른 응답이 온화하더라도 지수가 그 아래로 내려가지 않게 하한을 겁니다. 하한이
+          작동하면 결과 화면에 그 사실과 이유를 표시합니다.
         </li>
       </ol>
       <p>
-        마지막 단계에서 하한을 {L}%, 상한을 {U}%로 둔 것은 의도적입니다. 아무리 좋은 답변이어도 0%는
-        주지 않습니다. 어떤 관계에도 보장은 없고, 0%라는 결과는 자랑거리로만 쓰이기 때문입니다. 반대로
-        가장 나쁜 조합이어도 100%를 주지 않습니다. 자가진단 도구가 관계의 끝을 단정하는 것은 할 수 있는
-        일의 범위를 넘습니다. 가운데 구간의 기울기를 키운 것은, 대부분의 사용자가 모이는 구간에서 작은
-        차이가 실제로 보이게 하기 위해서입니다.
+        하한 {L}%, 상한 {U}%는 의도적입니다. 아무리 좋은 답변이어도 0%는 주지 않습니다 — 어떤 관계에도
+        보장은 없고, 0%는 자랑거리로만 쓰입니다. 가장 나쁜 조합이어도 100%를 주지 않습니다 —
+        자가진단 도구가 관계의 끝을 단정하는 것은 할 수 있는 일의 범위를 넘습니다. 여섯 계산기가 같은
+        상수를 쓰기 때문에, "빠른 검사 42%, 심화 51%"라는 문장이 해석 가능한 문장이 됩니다.
+      </p>
+
+      <h2>빠른 검사와 심화 진단은 다릅니다</h2>
+      <p>
+        빠른 검사는 선별 검사이고 심화 진단은 구조 검사입니다. 두 결과가 다르게 나올 수 있으며, 그
+        경우 심화 진단이 더 많은 정보를 담고 있습니다. 빠른 검사 결과에 ±7의 폭을 붙이는 것도 같은
+        이유입니다 — 일곱 문항이 감당할 수 있는 정밀도가 그 정도입니다.
       </p>
 
       <h2>등급 구간</h2>
@@ -125,50 +152,80 @@ const schemas = [
               </a>
             </h2>
             <p class="mt-2 text-[0.8125rem] text-ink-faint">
-              {config.questions.length}문항 · 축 {config.axes.length}개
+              {config.questions.length}문항 · 차원 {config.dims.length}개 · {config.minutes}
             </p>
 
             <table class="mt-6 w-full text-left text-[0.875rem]">
-              <caption class="sr-only">{config.title}의 축별 가중치</caption>
+              <caption class="sr-only">{config.title}의 차원별 가중치</caption>
               <thead class="border-b border-rule text-[0.75rem] tracking-[0.08em] text-ink-faint uppercase">
                 <tr>
                   <th scope="col" class="py-2 font-medium">
-                    축
+                    차원
                   </th>
                   <th scope="col" class="py-2 text-right font-medium">
                     가중치
                   </th>
                   <th scope="col" class="py-2 text-right font-medium">
-                    축 만점
+                    만점
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {config.axes.map((axis) => (
+                {config.dims.map((dim) => (
                   <tr class="border-b border-rule-soft">
-                    <td class="py-2">{axis.label}</td>
-                    <td class="py-2 text-right nums">{Math.round(axis.weight * 100)}%</td>
-                    <td class="py-2 text-right nums text-ink-faint">
-                      {axisMax(config, axis.key)}점
+                    <td class="py-2">
+                      {dim.label}
+                      {dim.levelOnly && (
+                        <span class="ml-2 text-[0.75rem] text-ink-faint">직접 반영 안 함</span>
+                      )}
                     </td>
+                    <td class="py-2 text-right nums">{Math.round(dim.weight * 100)}%</td>
+                    <td class="py-2 text-right nums text-ink-faint">{dimMax(config, dim.key)}점</td>
+                  </tr>
+                ))}
+                {(config.interactions ?? []).map((term) => (
+                  <tr class="border-b border-rule-soft">
+                    <td class="py-2">
+                      {term.label}
+                      <span class="ml-2 text-[0.75rem] text-ink-faint">상호작용 항</span>
+                    </td>
+                    <td class="py-2 text-right nums">{Math.round(term.weight * 100)}%</td>
+                    <td class="py-2 text-right nums text-ink-faint">—</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
+            {config.flags && config.flags.length > 0 && (
+              <p class="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
+                위험 하한: {config.flags.map((f) => `${f.questionId} → ${f.floor}%`).join(' · ')}
+              </p>
+            )}
+
             <div class="mt-8 flex flex-col gap-7">
+              {config.safety && (
+                <div>
+                  <div class="flex items-baseline gap-3">
+                    <span class="gutter-label">{config.safety.id}</span>
+                    <p class="text-[0.9375rem] font-semibold">{config.safety.text}</p>
+                  </div>
+                  <p class="mt-2 ml-9 text-[0.875rem] text-ink-faint">
+                    채점하지 않고 저장하지 않습니다. 결과 화면의 안내 배너만 띄웁니다.
+                  </p>
+                </div>
+              )}
               {config.questions.map((q) => (
                 <div>
                   <div class="flex items-baseline gap-3">
                     <span class="gutter-label">{q.id}</span>
                     <p class="text-[0.9375rem] font-semibold">
-                      {q.text.replace(/\{(?:상대|배우자)\}/g, config.pronoun.na)}
+                      {q.text.replace(pronounRe, config.pronoun.na)}
                     </p>
                   </div>
                   <ul class="mt-2 ml-9 flex flex-col gap-1 text-[0.875rem] text-ink-soft">
                     {q.choices.map((choice) => (
                       <li class="flex items-baseline justify-between gap-4 border-b border-rule-soft pb-1">
-                        <span>{choice.label.replace(/\{(?:상대|배우자)\}/g, config.pronoun.na)}</span>
+                        <span>{choice.label.replace(pronounRe, config.pronoun.na)}</span>
                         <span class="shrink-0 nums text-ink-faint">
                           {choice.score === maxScore(q) && choice.score > 0 ? '최대 ' : ''}
                           {choice.score}점
@@ -188,20 +245,18 @@ const schemas = [
       <div class="prose-quiet">
         <h2 class="!mt-0">한계</h2>
         <ul>
+          <li>이 검사 자체의 예측 타당도는 검증되지 않았습니다. 가중치와 상수는 설계 판단입니다.</li>
           <li>
-            자기보고에 의존합니다. 같은 관계라도 답하는 사람의 그날 기분에 따라 결과가 달라질 수
-            있습니다.
+            자기보고에 의존합니다. 같은 관계라도 답하는 날의 기분에 따라 결과가 달라질 수 있습니다.
           </li>
           <li>
-            한 사람의 관점만 반영합니다. 두 분이 각자 답해 나란히 놓아 보시는 편이 훨씬 유용합니다.
+            한 사람의 관점만 반영합니다. 두 분이 각자 답해 나란히 놓아 보시는 편이 훨씬 유용하고, 그
+            차이 자체가 대화의 재료가 됩니다.
           </li>
           <li>
-            배점은 설계자의 판단이 들어간 값입니다. 항목의 선정에는 근거가 있지만, 각 선택지에 몇 점을
-            줄지는 검증된 계수가 아닙니다.
-          </li>
-          <li>
-            폭력이나 학대가 있는 관계에는 적합하지 않습니다. 이 계산기는 그런 상황을 다루도록 만들어지지
-            않았습니다. 즉시 전문 기관의 도움을 받으시기 바랍니다.
+            폭력이나 통제, 학대가 있는 관계에는 적합하지 않습니다. 이 지수는 그런 상황을 설명하지
+            못합니다. 심화 진단은 시작 전에 이를 확인하고 안내 배너를 띄우지만, 그 답변은 채점에도
+            저장에도 쓰이지 않습니다. 해당하신다면 여성긴급전화 1366으로 도움을 받으시기 바랍니다.
           </li>
         </ul>
       </div>

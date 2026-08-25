@@ -5,7 +5,13 @@ export interface Session {
   answers: AnswerMap;
 }
 
-const key = (type: CalcType) => `calc:${type}`;
+/**
+ * The model version is part of the key on purpose. When v2 shipped, anyone
+ * mid-questionnaire had answers keyed to questions that no longer exist;
+ * bumping the key makes them start over rather than scoring old answers
+ * against a new model, which would be quietly wrong.
+ */
+const key = (type: CalcType) => `calc:${type}:v2`;
 
 /**
  * Answers live in sessionStorage and nowhere else until the visitor presses

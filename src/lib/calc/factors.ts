@@ -1,4 +1,5 @@
-import type { Grade } from './types';
+import { V2_FACTOR_COPY } from './factors-v2.ts';
+import type { Grade } from './types.ts';
 
 export interface FactorCopy {
   /** Short name for the risk, shown as the heading of a top-3 card. */
@@ -17,7 +18,14 @@ export interface FactorCopy {
  * deliberately about a *pattern*, never about a person — "이 습관"이지
  * "당신의 잘못"이 아니다.
  */
-export const FACTOR_COPY: Record<string, FactorCopy> = {
+/**
+ * v1 result copy, keyed by the question ids the retired calculators used.
+ *
+ * Kept because shared results from the old model are still out there and must
+ * keep rendering. Nothing new should be added here — v2 copy lives in
+ * factors-v2.ts, keyed by construct.
+ */
+export const LEGACY_FACTOR_COPY: Record<string, FactorCopy> = {
   // ── 연인 ────────────────────────────────────────────────────────────
   A1: {
     label: '아직 얕은 시간',
@@ -306,4 +314,13 @@ export const GRADE_COPY: Record<Grade, GradeCopy> = {
     body: '위험 신호가 여러 축에 걸쳐 뚜렷하게 나타납니다. 두 사람의 의지가 부족해서가 아니라, 이 정도로 얽힌 문제는 대개 둘만으로 풀기 어렵습니다. 커플·부부 상담을 진지하게 권합니다. 이 결과는 관계의 끝을 말하는 것이 아니라, 도움이 필요한 시점을 말하는 것입니다.',
     tone: 'clay',
   },
+};
+
+/**
+ * Everything the result pages can explain: v1 question ids for old shared
+ * links, v2 construct keys for the current calculators.
+ */
+export const FACTOR_COPY: Record<string, FactorCopy> = {
+  ...LEGACY_FACTOR_COPY,
+  ...V2_FACTOR_COPY,
 };

@@ -3,41 +3,62 @@ import type { CalcConfig } from '../lib/calc/types';
 
 interface Props {
   config: CalcConfig;
+  /** Where the "go deeper" card should point, for screeners. */
+  deepPath?: string;
+  deepName?: string;
+  deepMinutes?: string;
 }
 
-const { config } = Astro.props;
+const { config, deepPath, deepName, deepMinutes } = Astro.props;
+const isSimple = config.depth === 'simple';
 ---
 
 <div id="result" data-calc={config.type} class="mx-auto max-w-3xl px-5 sm:px-8">
   {/* Shown until the script has read the session, and left in place if there
       is nothing to read. */}
-  <div id="result-empty" class="surface-card my-10 p-6 sm:p-9">
+  <div id="result-empty" class="surface-card mt-12 p-6 sm:p-9">
     <p class="gutter-label">결과</p>
     <h1 class="mt-4 text-[1.75rem] leading-snug">아직 답변이 없습니다</h1>
     <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
-      결과는 답변한 기기 안에서만 계산되기 때문에, 검사를 다시 시작하셔야 합니다.
-      브라우저를 닫았거나 다른 기기로 여신 경우에도 이 화면이 보입니다.
+      결과는 답변한 기기 안에서만 계산되기 때문에, 검사를 다시 시작하셔야 합니다. 브라우저를 닫았거나
+      다른 기기로 여신 경우에도 이 화면이 보입니다.
     </p>
-    <a
-      href={config.path}
-      class="button-primary mt-8"
-    >
-      {config.name} 시작하기
-    </a>
+    <a href={config.path} class="button-primary mt-8"> {config.name} 시작하기 </a>
   </div>
 
   <article id="result-body" hidden>
-    <header class="surface-card mt-4 p-6 sm:p-9">
-      <p class="gutter-label settle">{config.name.toUpperCase()} · 결과</p>
-      <div class="settle mt-6 flex items-end gap-5" style="animation-delay:60ms">
-        <p class="text-[4.5rem] font-bold leading-none tracking-[-0.07em] nums sm:text-[5.5rem]">
-          <span id="result-index">0</span><span class="text-[0.4em] align-super">%</span>
+    {/* Violence and coercive control put a relationship outside what this
+        instrument can describe. That message goes above the number, not
+        below it. */}
+    <aside
+      id="result-safety"
+      class="mt-12 rounded-xl border border-clay bg-clay-soft p-5 text-[0.9375rem] leading-relaxed"
+      hidden
+    >
+      <p class="font-semibold">먼저 안전이 우선입니다</p>
+      <p class="mt-2 text-ink-soft">
+        말씀해 주신 상황은 이 검사가 다룰 수 있는 범위 밖입니다. 이 지수는 폭력이나 통제가 있는 관계를
+        설명하지 못하며, 그런 상황에서는 숫자보다 안전이 먼저입니다. 여성긴급전화 <strong
+          class="nums text-ink">1366</strong
+        >(24시간), 정신건강 상담전화 <strong class="nums text-ink">1577-0199</strong>로 도움을 받으실
+        수 있습니다.
+      </p>
+    </aside>
+
+    <header class="surface-card mt-6 p-6 sm:p-9">
+      <p class="gutter-label settle">
+        {config.name} · {isSimple ? '빠른 검사 결과' : '심화 진단 결과'}
+      </p>
+      <div class="settle mt-6 flex flex-wrap items-end gap-x-5 gap-y-2" style="animation-delay:60ms">
+        <p class="text-[4.5rem] leading-none font-bold tracking-[-0.07em] nums sm:text-[5.5rem]">
+          <span id="result-index">0</span><span class="align-super text-[0.4em]">%</span>
         </p>
         <p
           id="result-badge"
           class="mb-3 rounded-full border px-3 py-1 text-[0.8125rem] font-semibold"
         >
         </p>
+        <p id="result-band" class="mb-3 text-[0.8125rem] text-ink-faint" hidden></p>
       </div>
       <p class="mt-4 text-[0.8125rem] text-ink-faint">관계 위험 지수</p>
 
@@ -57,58 +78,80 @@ const { config } = Astro.props;
         이 수치는 지금 상태의 위험 신호를 지수로 나타낸 것입니다. 정해진 미래가 아니며, 관계는 두
         사람의 선택으로 언제든 달라집니다.
       </p>
+      <p id="result-flag" class="mt-3 rounded-xl border border-rule p-4 text-[0.875rem] leading-relaxed text-ink-soft" hidden></p>
     </header>
 
-    <section class="mt-16 border-t border-rule pt-9" aria-labelledby="axes-title">
-      <h2 id="axes-title" class="text-[1.5rem]">네 가지 축으로 보면</h2>
-      <p class="mt-2 text-[0.8125rem] text-ink-faint">
-        각 축은 0에 가까울수록 안정적입니다. 괄호 안은 최종 지수에 반영된 비중입니다.
-      </p>
-      <dl id="result-axes" class="mt-7 flex flex-col gap-5"></dl>
+    {/* Screeners give a one-line read; the deep dives give the structure. */}
+    <section id="result-quick" class="surface-card mt-6 p-6 sm:p-9" hidden>
+      <h2 class="text-[1.375rem]">이 숫자를 끌어올린 것</h2>
+      <p id="result-quick-line" class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft"></p>
     </section>
 
-    <section class="mt-16 border-t border-rule pt-9" aria-labelledby="factors-title">
-      <h2 id="factors-title" class="text-[1.5rem]">가장 큰 위험 요인</h2>
+    <section id="result-profile" class="surface-card mt-6 p-6 sm:p-9" hidden>
+      <h2 class="text-[1.375rem]">구조로 나눠 보면</h2>
+      <p class="mt-2 text-[0.8125rem] text-ink-faint">
+        각 축은 0에 가까울수록 안정적입니다. 비중은 최종 지수에 반영된 몫입니다.
+      </p>
+      <dl id="result-dims" class="mt-7 flex flex-col gap-6"></dl>
+      <div id="result-interactions" class="mt-7 flex flex-col gap-3" hidden></div>
+    </section>
+
+    <section id="result-type" class="surface-card mt-6 p-6 sm:p-9" hidden>
+      <p class="gutter-label">유형</p>
+      <h2 id="result-type-name" class="mt-3 text-[1.5rem]"></h2>
+      <p id="result-type-body" class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft"></p>
+      <p id="result-type-axes" class="mt-4 text-[0.8125rem] text-ink-faint"></p>
+    </section>
+
+    <section class="surface-card mt-6 p-6 sm:p-9">
+      <h2 class="text-[1.375rem]">가장 큰 위험 요인</h2>
       <p class="mt-2 text-[0.8125rem] text-ink-faint">
         지수를 가장 많이 끌어올린 답변부터 순서대로 보여드립니다.
       </p>
       <ol id="result-factors" class="mt-7 flex flex-col gap-8"></ol>
     </section>
 
-    <section class="mt-16 rounded-2xl bg-paper-raised p-6 sm:p-8" aria-labelledby="share-title">
-      <h2 id="share-title" class="text-[1.5rem]">이 결과는 한 사람의 관점입니다</h2>
+    {/* The main funnel: a screener that does not hand the reader onward has
+        only told them a number. */}
+    {
+      deepPath && (
+        <section class="surface-card mt-6 p-6 sm:p-9">
+          <p class="gutter-label">더 자세히</p>
+          <h2 class="mt-3 text-[1.375rem]">이 숫자는 빠른 선별의 결과입니다</h2>
+          <p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
+            일곱 개의 질문으로는 어디가 약한지까지 알 수 없습니다. {deepName}은 같은 관계를 일곱 개의
+            구조로 나눠, 만족과 헌신과 갈등 방식을 따로 보여 드립니다.
+          </p>
+          <a href={deepPath} class="button-primary mt-6">
+            {deepName} 시작하기 · {deepMinutes}
+          </a>
+        </section>
+      )
+    }
+
+    <section class="surface-card mt-6 p-6 sm:p-9">
+      <h2 class="text-[1.375rem]">이 결과는 한 사람의 관점입니다</h2>
       <p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
         같은 관계도 보는 자리에 따라 다르게 보입니다. 두 사람이 각자 답해 보면, 어디에서 서로를 다르게
         느끼고 있었는지가 드러납니다.
       </p>
       <div class="mt-6 flex flex-col gap-2 sm:flex-row">
-        <button
-          type="button"
-          id="result-share"
-          class="button-primary"
-        >
-          결과 링크 만들기
-        </button>
-        <a
-          href={config.path}
-          class="button-secondary"
-        >
-          상대의 관점으로 다시 해보기
-        </a>
+        <button type="button" id="result-share" class="button-primary">결과 링크 만들기</button>
+        <a href={config.path} class="button-secondary text-center"> 상대의 관점으로 다시 해보기 </a>
       </div>
       <p id="result-share-note" class="mt-3 text-[0.8125rem] text-ink-faint">
         링크에는 지수와 축 요약만 담기며, 답변 내용은 담기지 않습니다.
       </p>
     </section>
 
-    <section class="mt-16 border-t border-rule pt-9">
-      <h2 class="text-[1.5rem]">이어서 볼 것</h2>
-      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+    <section class="surface-card mt-6 p-6 sm:p-9">
+      <h2 class="text-[1.375rem]">이어서 볼 것</h2>
+      <div class="mt-4 flex flex-col gap-3">
         <slot name="next" />
       </div>
     </section>
 
-    <p class="mt-14 rounded-xl bg-paper-raised p-5 text-[0.8125rem] leading-relaxed text-ink-faint">
+    <p class="mt-8 text-[0.8125rem] leading-relaxed text-ink-faint">
       본 서비스는 관계를 돌아보기 위한 오락 및 자기점검 목적의 도구입니다. 결과는 공개된 관계 연구와
       통계 경향을 참고해 설계된 지수이며, 통계적 예측치나 진단이 아닙니다. 의학적·법률적·심리상담적
       판단을 대신할 수 없으며, 관계에 심각한 어려움이 있다면 전문 상담기관의 도움을 받으시기를
@@ -124,7 +167,7 @@ const { config } = Astro.props;
   import type { CalcType } from '../lib/calc/types';
   import { loadSession } from '../lib/storage';
   import { shareEnabled, shareResult } from '../lib/share';
-  import { renderAxes, toneClasses, countUp } from '../lib/result-view';
+  import { countUp, renderDims, renderInteractions, toneClasses } from '../lib/result-view';
 
   const root = document.getElementById('result');
   if (root) {
@@ -137,17 +180,58 @@ const { config } = Astro.props;
       const grade = GRADE_COPY[result.grade];
 
       document.getElementById('result-empty')!.hidden = true;
-      const body = document.getElementById('result-body')!;
-      body.hidden = false;
+      document.getElementById('result-body')!.hidden = false;
+
+      if (result.safetyTriggered) {
+        document.getElementById('result-safety')!.hidden = false;
+      }
 
       const badge = document.getElementById('result-badge')!;
       badge.textContent = grade.name;
       badge.className = `mb-3 rounded-full border px-3 py-1 text-[0.8125rem] font-semibold ${toneClasses(grade.tone)}`;
       document.getElementById('result-headline')!.textContent = grade.headline;
       document.getElementById('result-body-copy')!.textContent = grade.body;
-
       countUp(document.getElementById('result-index')!, result.index);
-      renderAxes(document.getElementById('result-axes')!, result.axes);
+
+      if (result.band) {
+        const band = document.getElementById('result-band')!;
+        band.hidden = false;
+        band.textContent = `± ${result.band} · 일곱 문항으로는 이 정도 폭 안에서 보는 것이 정직합니다`;
+      }
+
+      if (result.flag) {
+        const flagEl = document.getElementById('result-flag')!;
+        flagEl.hidden = false;
+        flagEl.textContent = result.flag.note;
+      }
+
+      if (config.depth === 'deep') {
+        document.getElementById('result-profile')!.hidden = false;
+        renderDims(document.getElementById('result-dims')!, result.dims);
+        renderInteractions(document.getElementById('result-interactions')!, result.interactions);
+
+        if (result.type) {
+          const section = document.getElementById('result-type')!;
+          section.hidden = false;
+          document.getElementById('result-type-name')!.textContent = result.type.name;
+          document.getElementById('result-type-body')!.textContent = result.type.body;
+          const spec = config.types!;
+          const read = (key: string) => result.dims.find((d) => d.key === key)?.effective ?? 0;
+          document.getElementById('result-type-axes')!.textContent =
+            `${spec.x.label} ${read(spec.x.dim)} · ${spec.y.label} ${read(spec.y.dim)} (각 50을 기준으로 나눕니다)`;
+        }
+      } else {
+        // The screener says which dimension carried the number, and nothing
+        // more precise than that — seven items cannot support more.
+        const quick = document.getElementById('result-quick')!;
+        const weighted = result.dims.filter((d) => d.weight > 0);
+        const top = weighted.reduce((hi, d) => (d.effective * d.weight > hi.effective * hi.weight ? d : hi), weighted[0]);
+        if (top && top.value > 0) {
+          quick.hidden = false;
+          document.getElementById('result-quick-line')!.textContent =
+            `"${top.label}" 축의 응답이 지수를 가장 많이 끌어올렸습니다. 어느 항목이 어떻게 작용했는지는 심화 검사에서 나눠 볼 수 있습니다.`;
+        }
+      }
 
       const list = document.getElementById('result-factors')!;
       if (result.topFactors.length === 0) {
@@ -157,7 +241,7 @@ const { config } = Astro.props;
         list.appendChild(li);
       }
       result.topFactors.forEach((factor, i) => {
-        const copy = FACTOR_COPY[factor.questionId];
+        const copy = FACTOR_COPY[factor.factorKey];
         if (!copy) return;
         const li = document.createElement('li');
         li.className = 'settle';
@@ -165,15 +249,14 @@ const { config } = Astro.props;
         li.innerHTML = `
           <div class="flex items-baseline gap-3">
             <span class="gutter-label">${String(i + 1).padStart(2, '0')}</span>
-            <h3 class="text-[1.125rem]"></h3>
+            <h3 class="text-[1.125rem] font-semibold"></h3>
           </div>
           <p class="mt-2 pl-9 text-[0.9375rem] leading-relaxed text-ink-soft"></p>
-          <p class="mt-3 ml-9 border-l-2 border-rule pl-4 text-[0.9375rem] leading-relaxed">
+          <p class="mt-3 ml-9 rounded-xl bg-paper-raised p-4 text-[0.9375rem] leading-relaxed">
             <span class="text-ink-faint">지금 할 수 있는 것 · </span><span class="text-ink"></span>
           </p>
           <p class="mt-2 pl-9 text-[0.8125rem] text-ink-faint"></p>`;
-        const [h3] = li.getElementsByTagName('h3');
-        h3.textContent = copy.label;
+        li.getElementsByTagName('h3')[0].textContent = copy.label;
         const paragraphs = li.getElementsByTagName('p');
         paragraphs[0].textContent = copy.note;
         paragraphs[1].lastElementChild!.textContent = copy.action;
@@ -191,7 +274,7 @@ const { config } = Astro.props;
           shareBtn.disabled = true;
           shareBtn.textContent = '만드는 중…';
           try {
-            const path = await shareResult(type, session.perspective, result);
+            const path = await shareResult(config, session.perspective, result);
             const url = new URL(path, window.location.origin).href;
             try {
               await navigator.clipboard.writeText(url);
