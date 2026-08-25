@@ -10,38 +10,43 @@ import Base from '../../layouts/Base.astro';
 ---
 
 <Base
-  title="공유된 결과 | 헤어질 확률 계산기"
+  title="공유된 결과 | 이혼 확률 계산기"
   description="공유된 관계 위험 지수 결과입니다."
   path="/r"
   noindex
 >
-  <div id="shared" class="mx-auto max-w-2xl px-5 pt-16 sm:px-8 sm:pt-20">
-    <p id="shared-state" class="gutter-label">불러오는 중…</p>
+  <div id="shared" class="mx-auto max-w-3xl px-5 pt-12 sm:px-8 sm:pt-16">
+    <div id="shared-state" class="surface-card animate-pulse p-6 sm:p-9" role="status">
+      <span class="sr-only">공유 결과를 불러오는 중</span>
+      <div class="h-3 w-24 rounded bg-rule"></div>
+      <div class="mt-7 h-20 w-48 rounded bg-rule-soft"></div>
+      <div class="mt-8 h-6 w-3/4 rounded bg-rule-soft"></div>
+    </div>
 
-    <article id="shared-body" hidden>
+    <article id="shared-body" class="surface-card p-6 sm:p-9" hidden>
       <p class="gutter-label"><span id="shared-kind"></span> · 공유된 결과</p>
       <div class="mt-6 flex items-end gap-5">
-        <p class="font-serif text-[4.5rem] leading-none nums sm:text-[5.5rem]">
+        <p class="text-[4.5rem] font-bold leading-none tracking-[-0.07em] nums sm:text-[5.5rem]">
           <span id="shared-index">0</span><span class="text-[0.4em] align-super">%</span>
         </p>
-        <p id="shared-badge" class="mb-3 border px-3 py-1 text-[0.8125rem] font-semibold tracking-wide">
+        <p id="shared-badge" class="mb-3 rounded-full border px-3 py-1 text-[0.8125rem] font-semibold">
         </p>
       </div>
       <p class="mt-4 text-[0.8125rem] text-ink-faint">관계 위험 지수</p>
 
       <h1 id="shared-headline" class="mt-7 text-[1.625rem] leading-snug sm:text-[1.875rem]"></h1>
-      <p class="mt-6 border-l-2 border-clay pl-4 text-[0.875rem] leading-relaxed text-ink-soft">
+      <p class="mt-7 rounded-xl bg-clay-soft p-4 text-[0.875rem] leading-relaxed text-ink-soft">
         이 수치는 한 사람이 답한 결과이며, 정해진 미래가 아닙니다. 답변 내용은 저장되지 않아 이
         화면에도 표시되지 않습니다.
       </p>
 
       <section class="mt-14 border-t border-rule pt-8">
-        <h2 class="font-serif text-xl">네 가지 축으로 보면</h2>
+        <h2 class="text-[1.5rem]">네 가지 축으로 보면</h2>
         <dl id="shared-axes" class="mt-7 flex flex-col gap-5"></dl>
       </section>
 
       <section class="mt-14 border-t border-rule pt-8">
-        <h2 class="font-serif text-xl">당신이 본 두 사람의 관계는 어떤가요?</h2>
+        <h2 class="text-[1.5rem]">당신이 본 두 사람의 관계는 어떤가요?</h2>
         <p class="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
           같은 관계도 보는 자리에 따라 다르게 보입니다. 같은 질문에 직접 답해 보면, 어디에서 서로를
           다르게 느끼고 있었는지가 드러납니다.
@@ -49,21 +54,21 @@ import Base from '../../layouts/Base.astro';
         <a
           id="shared-cta"
           href="/"
-          class="mt-6 inline-block bg-ink px-5 py-3 text-[0.9375rem] font-semibold text-paper transition-opacity hover:opacity-88"
+          class="button-primary mt-6"
         >
           나도 해보기
         </a>
       </section>
     </article>
 
-    <div id="shared-missing" hidden>
+    <div id="shared-missing" class="surface-card p-6 sm:p-9" hidden>
       <h1 class="mt-4 text-[1.75rem] leading-snug">결과를 찾을 수 없습니다</h1>
       <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
         링크가 잘못되었거나 삭제된 결과일 수 있습니다. 직접 검사해 보시겠어요?
       </p>
       <a
         href="/"
-        class="mt-8 inline-block bg-ink px-6 py-3.5 text-[0.9375rem] font-semibold text-paper transition-opacity hover:opacity-88"
+        class="button-primary mt-8"
       >
         계산기 둘러보기
       </a>
@@ -111,7 +116,7 @@ import Base from '../../layouts/Base.astro';
 
         const badge = document.getElementById('shared-badge')!;
         badge.textContent = grade.name;
-        badge.className = `mb-3 border px-3 py-1 text-[0.8125rem] font-semibold tracking-wide ${toneClasses(grade.tone)}`;
+        badge.className = `mb-3 rounded-full border px-3 py-1 text-[0.8125rem] font-semibold ${toneClasses(grade.tone)}`;
         document.getElementById('shared-headline')!.textContent = grade.headline;
 
         countUp(document.getElementById('shared-index')!, row.risk_index);

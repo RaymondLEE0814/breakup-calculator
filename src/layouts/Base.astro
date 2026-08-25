@@ -42,16 +42,8 @@ const ogImage = absolute(og ?? SITE.defaultOg);
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <meta name="theme-color" content="#f7f5f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap"
-    />
 
     {
       schemas.map((schema) => (
@@ -59,10 +51,10 @@ const ogImage = absolute(og ?? SITE.defaultOg);
       ))
     }
   </head>
-  <body class="min-h-dvh flex flex-col antialiased">
+  <body class="flex min-h-dvh flex-col antialiased">
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-paper-raised focus:px-4 focus:py-2 focus:text-sm"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-white"
     >
       본문으로 건너뛰기
     </a>

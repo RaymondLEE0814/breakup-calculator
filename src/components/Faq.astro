@@ -6,15 +6,15 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-{/* Rendered as real text, not a script-driven accordion: the FAQPage schema
-    may only mark up what a visitor can actually read on the page. */}
-<dl class="mt-6">
+<div class="border-t border-rule">
   {
-    items.map((item) => (
-      <div class="border-t border-rule-soft py-5 first:border-t-0 first:pt-0">
-        <dt class="text-[0.9375rem] font-semibold">{item.q}</dt>
-        <dd class="mt-2 max-w-2xl text-[0.9375rem] leading-relaxed text-ink-soft">{item.a}</dd>
-      </div>
+    items.map((item, index) => (
+      <details class="group border-b border-rule-soft" open={index === 0}>
+        <summary class="cursor-pointer py-5 pr-4 text-[0.9375rem] font-semibold marker:text-clay sm:text-[1rem]">
+          {item.q}
+        </summary>
+        <p class="max-w-2xl pb-6 text-[0.9375rem] leading-relaxed text-ink-soft">{item.a}</p>
+      </details>
     ))
   }
-</dl>
+</div>

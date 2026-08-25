@@ -4,21 +4,24 @@ import { SITE } from '../lib/site';
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-24 border-t border-rule-soft">
-  <div class="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-    <p class="prose-quiet text-[0.8125rem] leading-relaxed text-ink-faint">
-      본 서비스는 관계를 돌아보기 위한 오락 및 자기점검 목적의 도구입니다. 결과는 공개된 관계
-      연구와 통계 경향을 참고해 설계된 지수이며, 통계적 예측치나 진단이 아닙니다. 관계에 심각한
-      어려움이 있다면 전문 상담기관의 도움을 받으시기를 권합니다.
-    </p>
-    <div
-      class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8125rem] text-ink-soft"
-    >
-      <a href="/about" class="hover:text-ink">계산 방식</a>
-      <a href="/guide" class="hover:text-ink">가이드</a>
-      <a href="/privacy" class="hover:text-ink">개인정보처리방침</a>
-      <a href="/terms" class="hover:text-ink">이용약관</a>
-      <span class="ml-auto text-ink-faint nums">© {year} {SITE.publisher}</span>
+<footer class="mt-24 border-t border-rule-soft bg-paper-raised">
+  <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
+    <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+      <p class="max-w-2xl text-[0.8125rem] leading-relaxed text-ink-faint">
+        본 서비스는 관계를 돌아보기 위한 오락 및 자기점검 목적의 도구입니다. 결과는 공개된 관계 연구와
+        통계 경향을 참고한 설계상 지수이며, 통계적 예측치나 진단이 아닙니다. 관계에 심각한 어려움이
+        있다면 전문 상담기관의 도움을 받으시기를 권합니다.
+      </p>
+      <p class="text-[0.8125rem] font-semibold text-ink nums">© {year} {SITE.publisher}</p>
     </div>
+    <nav
+      class="mt-8 flex flex-wrap gap-x-5 gap-y-2 border-t border-rule pt-5 text-[0.8125rem] text-ink-soft"
+      aria-label="하단 메뉴"
+    >
+      <a href="/about" class="hover:text-clay">계산 방식</a>
+      <a href="/guide" class="hover:text-clay">가이드</a>
+      <a href="/privacy" class="hover:text-clay">개인정보처리방침</a>
+      <a href="/terms" class="hover:text-clay">이용약관</a>
+    </nav>
   </div>
 </footer>

@@ -3,15 +3,15 @@ import Base from '../layouts/Base.astro';
 import { CALC_TYPES, CONFIGS, GRADE_COPY, K, L, M, U, axisMax, maxScore } from '../lib/calc';
 import { breadcrumbLd } from '../lib/site';
 
-const title = '계산 방식 — 지수는 어떻게 만들어지나 | 헤어질 확률 계산기';
+const title = '계산 방식 | 지수는 어떻게 만들어지나 | 이혼 확률 계산기';
 const description =
   '문항별 배점, 축 가중치, 지수를 만드는 계산식, 등급 구간까지 이 계산기가 쓰는 모델 전체를 공개합니다. 무엇을 근거로 삼았고 무엇을 근거로 삼지 않았는지도 함께 적었습니다.';
 
 const bands = [
-  { grade: 'stable', range: '5 – 29%' },
-  { grade: 'check', range: '30 – 49%' },
-  { grade: 'caution', range: '50 – 67%' },
-  { grade: 'warning', range: '68 – 85%' },
+  { grade: 'stable', range: '5 - 29%' },
+  { grade: 'check', range: '30 - 49%' },
+  { grade: 'caution', range: '50 - 67%' },
+  { grade: 'warning', range: '68 - 85%' },
 ] as const;
 
 const schemas = [
@@ -62,16 +62,16 @@ const schemas = [
       <h2>근거 표기</h2>
       <ul>
         <li>
-          <strong>관계 연구 기반</strong> — 비난·경멸·방어·담쌓기가 관계의 앞날을 예고하는 신호라는
+          <strong>관계 연구 기반</strong>: 비난·경멸·방어·담쌓기가 관계의 앞날을 예고하는 신호라는
           부부 관계 연구의 널리 알려진 결과에 근거한 항목. 세 계산기의 최고 배점 문항이 여기에
           해당합니다.
         </li>
         <li>
-          <strong>통계 경향 반영</strong> — 통계청 이혼통계에서 반복해서 나타나는 경향(이혼 사유 중
+          <strong>통계 경향 반영</strong>: 통계청 이혼통계에서 반복해서 나타나는 경향(이혼 사유 중
           성격 차이와 경제 문제의 비중, 혼인 4년 이하와 20년 이상 구간의 비중)을 반영한 항목.
         </li>
         <li>
-          <strong>연구 기반 휴리스틱</strong> — 직접적인 정량 근거 없이, 관계 연구의 일반적인 지식에서
+          <strong>연구 기반 휴리스틱</strong>: 직접적인 정량 근거 없이, 관계 연구의 일반적인 지식에서
           설계자가 배점을 정한 항목. 나머지 대부분이 여기에 해당하며, 정확한 수치를 인용할 수 없는
           항목은 모두 이쪽으로 분류했습니다.
         </li>
@@ -81,15 +81,15 @@ const schemas = [
       <p>세 단계로 계산합니다.</p>
       <ol class="my-5 flex list-none flex-col gap-3 border-l-2 border-rule pl-5 text-ink-soft">
         <li>
-          <strong class="text-ink">1. 축 정규화</strong> — 축별로
+          <strong class="text-ink">1. 축 정규화</strong>: 축별로
           <code class="nums">획득 점수 ÷ 축 만점 × 100</code>. 결과는 0~100입니다.
         </li>
         <li>
-          <strong class="text-ink">2. 가중합</strong> — 각 축의 값에 아래 표의 가중치를 곱해 더합니다.
+          <strong class="text-ink">2. 가중합</strong>: 각 축의 값에 아래 표의 가중치를 곱해 더합니다.
           이 값을 <code>S</code>라고 하며 0~100입니다.
         </li>
         <li>
-          <strong class="text-ink">3. 로지스틱 변환</strong> —
+          <strong class="text-ink">3. 로지스틱 변환</strong>:
           <code class="nums">R = {L} + ({U} − {L}) / (1 + e^(−{K} × (S − {M})))</code>
         </li>
       </ol>
@@ -106,7 +106,7 @@ const schemas = [
         {
           bands.map((band) => (
             <li>
-              <strong class="nums">{band.range}</strong> · {GRADE_COPY[band.grade].name} —{' '}
+              <strong class="nums">{band.range}</strong> · {GRADE_COPY[band.grade].name}:{' '}
               {GRADE_COPY[band.grade].headline}
             </li>
           ))
@@ -119,7 +119,7 @@ const schemas = [
         const config = CONFIGS[type];
         return (
           <section class="mt-16 border-t border-rule pt-8">
-            <h2 class="font-serif text-2xl">
+            <h2 class="text-2xl">
               <a href={config.path} class="hover:text-clay">
                 {config.title}
               </a>

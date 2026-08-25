@@ -41,7 +41,7 @@ export function renderAxes(target: HTMLElement, axes: AxisResult[]): void {
         <dt class="text-[0.9375rem]"></dt>
         <dd class="text-[0.8125rem] text-ink-faint nums"></dd>
       </div>
-      <div class="mt-2 h-1.5 w-full bg-rule-soft">
+      <div class="mt-2 h-1.5 w-full overflow-hidden border-l border-rule">
         <div data-fill class="h-1.5 ${barClass(axis.value)} transition-[width] duration-700 ease-out" style="width:0%"></div>
       </div>`;
     const dt = row.querySelector('dt')!;

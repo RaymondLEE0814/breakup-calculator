@@ -14,8 +14,8 @@ import type { CalcConfig } from './types';
 export const breakup: CalcConfig = {
   type: 'breakup',
   path: '/breakup',
-  name: '헤어질 확률 계산기',
-  title: '헤어질 확률 계산기',
+  name: '연애 헤어질 확률 계산기',
+  title: '연애 헤어질 확률 계산기',
   intro:
     '16개의 질문에 답하면, 두 사람 관계의 위험 신호를 네 가지 축으로 정리해 드립니다. 점수를 매기기 위한 검사가 아니라, 돌아보기 위한 검사입니다. 솔직하게 답할수록 정확해집니다.',
   pronoun: { m: '여자친구', f: '남자친구', na: '애인' },

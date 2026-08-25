@@ -1,6 +1,6 @@
 ---
 const nav = [
-  { href: '/breakup', label: '연인' },
+  { href: '/breakup', label: '연애' },
   { href: '/divorce', label: '부부' },
   { href: '/twilight', label: '황혼' },
   { href: '/guide', label: '가이드' },
@@ -10,16 +10,21 @@ const here = Astro.url.pathname;
 const isActive = (href: string) => here === href || here.startsWith(`${href}/`);
 ---
 
-<header class="border-b border-rule-soft">
-  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
-    <a href="/" class="group flex items-baseline gap-2">
-      <span class="font-serif text-[1.0625rem] font-bold tracking-tight">헤어질 확률 계산기</span>
-      <span class="hidden text-[0.6875rem] tracking-[0.14em] text-ink-faint sm:inline">
-        RELATIONSHIP RISK
+<header class="sticky top-0 z-30 border-b border-rule-soft bg-white/95 backdrop-blur-sm">
+  <div
+    class="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8 sm:py-4 lg:px-10"
+  >
+    <a href="/" class="group flex items-center gap-2.5 whitespace-nowrap">
+      <span
+        class="flex size-5 items-center justify-center rounded-[6px] bg-ink text-[0.625rem] font-bold text-white transition-colors group-hover:bg-clay"
+        aria-hidden="true">R</span
+      >
+      <span class="text-[1rem] font-bold tracking-[-0.035em] sm:text-[1.0625rem]">
+        이혼 확률 계산기
       </span>
     </a>
-    <nav aria-label="주요 메뉴">
-      <ul class="flex items-center gap-1 text-[0.8125rem] sm:gap-2">
+    <nav class="w-full overflow-x-auto sm:w-auto" aria-label="주요 메뉴">
+      <ul class="flex min-w-max items-center gap-1 text-[0.8125rem] sm:gap-2">
         {
           nav.map((item) => (
             <li>
@@ -27,13 +32,13 @@ const isActive = (href: string) => here === href || here.startsWith(`${href}/`);
                 href={item.href}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 class:list={[
-                  'rounded-sm px-2 py-1.5 transition-colors hover:text-ink',
-                  isActive(item.href) ? 'text-ink' : 'text-ink-soft',
+                  'relative rounded-lg px-2.5 py-1.5 font-medium transition-colors hover:bg-paper-raised hover:text-ink',
+                  isActive(item.href) ? 'text-clay' : 'text-ink-soft',
                 ]}
               >
                 {item.label}
                 {isActive(item.href) && (
-                  <span class="mt-0.5 block h-px w-full bg-clay" aria-hidden="true" />
+                  <span class="absolute right-2.5 bottom-0.5 left-2.5 h-0.5 bg-clay" aria-hidden="true" />
                 )}
               </a>
             </li>

@@ -26,29 +26,29 @@ const heaviest = [...config.axes].sort((a, b) => b.weight - a.weight)[0];
 
 {/* Hidden while answering, but present in the HTML: this is the readable,
     crawlable half of the page. */}
-<div id="quiz-aside" class="mx-auto max-w-2xl px-5 sm:px-8">
-  <section class="mt-20 border-t border-rule pt-8" aria-labelledby="asks">
-    <h2 id="asks" class="font-serif text-xl">이 계산기가 묻는 것</h2>
-    <p class="mt-2 text-[0.8125rem] text-ink-faint">
+<div id="quiz-aside" class="mx-auto max-w-3xl px-5 sm:px-8">
+  <section class="mt-20" aria-labelledby="asks">
+    <h2 id="asks" class="text-[1.75rem]">이 계산기가 묻는 것</h2>
+    <p class="mt-3 text-[0.875rem] leading-relaxed text-ink-faint">
       가중치가 가장 큰 축은 <strong class="text-ink-soft">{heaviest.label}</strong>({Math.round(
         heaviest.weight * 100,
       )}%)입니다. 문항 옆 숫자는 그 문항에서 붙을 수 있는 최대 점수입니다.
     </p>
-    <div class="mt-8 flex flex-col gap-8">
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
       {
         byStep.map((step) => (
-          <div>
-            <div class="flex items-baseline gap-3">
-              <span class="gutter-label">STEP {String(step.index).padStart(2, '0')}</span>
-              <h3 class="font-serif text-[1.0625rem]">{step.title}</h3>
+          <div class="surface-card p-5">
+            <div class="flex items-baseline justify-between gap-3">
+              <h3 class="text-[1.0625rem]">{step.title}</h3>
+              <span class="shrink-0 text-[0.75rem] text-ink-faint nums">
+                {step.questions.length}개 문항
+              </span>
             </div>
-            <ul class="mt-3 flex flex-col gap-1.5 border-l border-rule-soft pl-4">
+            <ul class="mt-4 flex flex-col gap-2.5">
               {step.questions.map((q) => (
                 <li class="flex items-baseline justify-between gap-4 text-[0.9375rem] text-ink-soft">
                   <span>{q.text.replace(/\{(?:상대|배우자)\}/g, config.pronoun.na)}</span>
-                  <span class="shrink-0 text-[0.75rem] text-ink-faint nums">
-                    최대 {maxScore(q)}점
-                  </span>
+                  <span class="sr-only">최대 {maxScore(q)}점</span>
                 </li>
               ))}
             </ul>
@@ -64,19 +64,19 @@ const heaviest = [...config.axes].sort((a, b) => b.weight - a.weight)[0];
     </p>
   </section>
 
-  <section class="mt-16 border-t border-rule pt-8" aria-labelledby="calc-faq">
-    <h2 id="calc-faq" class="font-serif text-xl">자주 묻는 질문</h2>
+  <section class="mt-20 border-t border-rule pt-10" aria-labelledby="calc-faq">
+    <h2 id="calc-faq" class="text-[1.75rem]">자주 묻는 질문</h2>
     <Faq items={faq} />
   </section>
 
-  <section class="mt-16 border-t border-rule pt-8" aria-labelledby="reading">
-    <h2 id="reading" class="font-serif text-xl">함께 읽어보기</h2>
-    <div class="mt-4">
+  <section class="mt-20 border-t border-rule pt-10" aria-labelledby="reading">
+    <h2 id="reading" class="text-[1.75rem]">함께 읽어보기</h2>
+    <div class="mt-5 grid gap-3 sm:grid-cols-2">
       {
         reading.map((item) => (
           <a
             href={item.href}
-            class="group flex flex-col gap-1 border-b border-rule-soft py-4 last:border-b-0"
+            class="group rounded-2xl border border-rule-soft bg-paper-raised p-5 transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-clay hover:bg-white"
           >
             <span class="text-[0.9375rem] transition-colors group-hover:text-clay">
               {item.title}

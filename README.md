@@ -1,4 +1,4 @@
-# 헤어질 확률 계산기
+# 이혼 확률 계산기
 
 연인·부부·황혼 부부를 위한 관계 위험 자가진단. Astro 정적 사이트 + Cloudflare Workers + Supabase.
 

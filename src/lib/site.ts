@@ -2,12 +2,12 @@
 
 export const SITE = {
   url: 'https://love.mycarebom.com',
-  name: '헤어질 확률 계산기',
+  name: '이혼 확률 계산기',
   /** Used in JSON-LD as the publisher and in the footer. */
   publisher: 'mycarebom',
   locale: 'ko_KR',
   description:
-    '16개 질문으로 우리 관계의 위험 신호를 담담하게 점검해 보세요. 헤어질 확률, 이혼 확률, 황혼 이혼까지 — 무료, 회원가입 없음, 결과 즉시 확인.',
+    '연애 헤어질 확률부터 부부 이혼 확률, 황혼 이혼까지. 관계의 위험 신호를 질문으로 담담하게 점검해 보세요.',
   defaultOg: '/og/default.png',
 } as const;
 

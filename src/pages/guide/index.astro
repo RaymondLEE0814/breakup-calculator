@@ -5,7 +5,7 @@ import { breadcrumbLd } from '../../lib/site';
 
 const articles = (await getCollection('guide')).sort((a, b) => a.data.order - b.data.order);
 
-const title = '관계 가이드 — 이별과 이혼, 연구가 말하는 것';
+const title = '관계 가이드 | 이별과 이혼, 연구가 말하는 것';
 const description =
   '헤어지는 커플의 신호, 이혼을 예측하는 대화 습관, 한국의 이혼 통계, 황혼이혼의 배경까지. 계산기의 문항이 어떤 근거에서 나왔는지 정리한 글들입니다.';
 
@@ -18,26 +18,35 @@ const schemas = [
 ---
 
 <Base title={title} description={description} path="/guide" schemas={schemas}>
-  <section class="mx-auto max-w-2xl px-5 pt-16 pb-8 sm:px-8 sm:pt-20">
+  <section class="mx-auto max-w-7xl px-5 pt-16 pb-10 sm:px-8 sm:pt-24 lg:px-10">
     <p class="gutter-label">GUIDE</p>
-    <h1 class="mt-4 text-[2rem] leading-tight sm:text-[2.5rem]">관계 가이드</h1>
-    <p class="mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
+    <h1 class="mt-4 text-[2.5rem] leading-tight sm:text-[4rem]">관계 가이드</h1>
+    <p class="mt-5 max-w-2xl text-[1.0625rem] leading-relaxed text-ink-soft">
       계산기의 문항은 근거 없이 만들어지지 않았습니다. 어떤 연구와 어떤 통계에서 나왔는지, 그리고 그
       항목이 실제 관계에서 어떻게 작동하는지 정리한 글들입니다.
     </p>
   </section>
 
-  <section class="mx-auto max-w-2xl px-5 pb-8 sm:px-8">
-    <div class="border-t border-rule">
+  <section class="mx-auto max-w-7xl px-5 pb-8 sm:px-8 lg:px-10">
+    <div class="grid gap-4 md:grid-cols-2">
       {
-        articles.map((article) => (
-          <a href={`/guide/${article.id}`} class="group block border-b border-rule-soft py-7">
-            <h2 class="font-serif text-[1.25rem] leading-snug transition-colors group-hover:text-clay">
+        articles.map((article, index) => (
+          <a
+            href={`/guide/${article.id}`}
+            class:list={[
+              'group flex min-h-56 flex-col justify-between rounded-2xl border border-rule-soft bg-paper-raised p-6 transition-[transform,border-color,background-color] hover:-translate-y-0.5 hover:border-clay hover:bg-white sm:p-7',
+              index === 0 && 'md:col-span-2 md:min-h-64',
+            ]}
+          >
+            <h2 class:list={['text-[1.25rem] leading-snug transition-colors group-hover:text-clay', index === 0 && 'max-w-2xl sm:text-[2rem]']}>
               {article.data.title}
             </h2>
-            <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-soft">
-              {article.data.description}
-            </p>
+            <div class="mt-8">
+              <p class="max-w-2xl text-[0.9375rem] leading-relaxed text-ink-soft">
+                {article.data.description}
+              </p>
+              <p class="mt-4 text-[0.8125rem] font-semibold text-clay">읽어보기</p>
+            </div>
           </a>
         ))
       }

@@ -2,84 +2,98 @@
 @import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
 /*
-  Quiet-print aesthetic. The subject matter is other people's relationships, so
-  nothing here shouts: warm paper, ink, hairline rules, one clay accent used
-  sparingly, and a Korean serif reserved for headlines and the result numeral.
+  Editorial Index design system
+  - One locked light theme on a white canvas, per the product brief.
+  - Pretendard is the only type family: weight and spacing create hierarchy.
+  - Cobalt is the single accent. Status colors are reserved for result meaning.
+  - Cards use 16px radii, controls use 12px, and status labels alone may be pills.
 */
 @theme {
-  --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
-  --font-serif: "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-  --color-paper: #f7f5f1;
-  --color-paper-raised: #fffdfa;
-  --color-ink: #191714;
-  --color-ink-soft: #57514a;
-  --color-ink-faint: #8c847a;
-  --color-rule: #ddd7cd;
-  --color-rule-soft: #eae5dc;
+  --color-paper: #ffffff;
+  --color-paper-raised: #f6f7f9;
+  --color-ink: #17191d;
+  --color-ink-soft: #555d68;
+  --color-ink-faint: #68717d;
+  --color-rule: #d8dde5;
+  --color-rule-soft: #e8ebf0;
 
-  --color-clay: #a8523c;
-  --color-clay-soft: #c9836f;
-  --color-sage: #55704f;
-  --color-amber: #a3762b;
+  --color-clay: #315fc4;
+  --color-clay-soft: #dce7ff;
+  --color-sage: #34745a;
+  --color-amber: #a86400;
 
-  --text-display: 3.25rem;
-  --text-display--line-height: 1.15;
-  --text-display--letter-spacing: -0.02em;
+  --text-display: clamp(2.75rem, 5.2vw, 4.75rem);
+  --text-display--line-height: 1.06;
+  --text-display--letter-spacing: -0.055em;
 }
 
 @layer base {
   :root {
-    color-scheme: light dark;
+    color-scheme: light;
   }
 
   html {
-    background-color: var(--color-paper);
+    background: var(--color-paper);
     color: var(--color-ink);
+    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    /* Paper grain. Two stops of near-invisible noise keep large flat areas from
-       reading as flat screen-white without costing an image request. */
-    background-image:
-      radial-gradient(circle at 18% 12%, rgb(168 82 60 / 0.035), transparent 42%),
-      radial-gradient(circle at 82% 78%, rgb(85 112 79 / 0.03), transparent 46%);
-    background-attachment: fixed;
+    min-width: 320px;
+    background: var(--color-paper);
     font-family: var(--font-sans);
-    line-height: 1.75;
-    letter-spacing: -0.005em;
+    font-size: 1rem;
+    line-height: 1.7;
+    letter-spacing: -0.018em;
     word-break: keep-all;
     overflow-wrap: break-word;
   }
 
-  h1, h2, h3 {
-    font-family: var(--font-serif);
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-sans);
     font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.3;
+    letter-spacing: -0.04em;
+    line-height: 1.22;
+  }
+
+  button,
+  a,
+  label,
+  input {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a {
+    touch-action: manipulation;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-clay);
+    outline: 3px solid var(--color-clay);
     outline-offset: 3px;
-    border-radius: 2px;
+    border-radius: 6px;
   }
 
   ::selection {
-    background-color: rgb(168 82 60 / 0.18);
+    background-color: rgb(49 95 196 / 0.16);
+    color: var(--color-ink);
   }
 }
 
 @layer components {
-  /* A margin note: the small numeral or label that sits in the left gutter of
-     a section, the way a print edition marks its sections. */
   .gutter-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: var(--color-ink-faint);
+    color: var(--color-clay);
     font-variant-numeric: tabular-nums;
   }
 
@@ -87,56 +101,108 @@
     border-top: 1px solid var(--color-rule);
   }
 
+  .surface-card {
+    border: 1px solid var(--color-rule-soft);
+    border-radius: 1rem;
+    background: var(--color-paper-raised);
+  }
+
+  .button-primary {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: var(--color-ink);
+    padding: 0.75rem 1.25rem;
+    color: #ffffff;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: transform 180ms ease, background-color 180ms ease;
+  }
+
+  .button-primary:hover {
+    background: var(--color-clay);
+  }
+
+  .button-primary:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  .button-secondary {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-rule);
+    border-radius: 0.75rem;
+    background: var(--color-paper);
+    padding: 0.75rem 1.25rem;
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    font-weight: 650;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: transform 180ms ease, border-color 180ms ease, color 180ms ease;
+  }
+
+  .button-secondary:hover {
+    border-color: var(--color-clay);
+    color: var(--color-clay);
+  }
+
+  .button-secondary:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
   .prose-quiet {
     max-width: 68ch;
   }
 
   .prose-quiet p {
-    margin-block: 1.15em;
+    margin-block: 1.1em;
     color: var(--color-ink-soft);
   }
 
   .prose-quiet h2 {
-    margin-block: 2.4em 0.8em;
+    margin-block: 2.3em 0.75em;
     font-size: 1.5rem;
   }
 
   .prose-quiet h3 {
-    margin-block: 1.9em 0.6em;
-    font-size: 1.175rem;
+    margin-block: 1.8em 0.55em;
+    font-size: 1.125rem;
   }
 
   .prose-quiet ul {
     margin-block: 1.15em;
-    padding-left: 1.1em;
-    list-style: none;
+    padding-left: 1.15em;
+    list-style: square;
     color: var(--color-ink-soft);
   }
 
   .prose-quiet li {
-    position: relative;
-    margin-block: 0.5em;
+    margin-block: 0.55em;
+    padding-left: 0.2em;
   }
 
-  .prose-quiet li::before {
-    /* A middot, not a dash: list items often start with an em dash of their
-       own, and two dashes in a row read as a typo. */
-    content: "·";
-    position: absolute;
-    left: -1.1em;
-    color: var(--color-ink-faint);
+  .prose-quiet li::marker {
+    color: var(--color-clay);
+    font-size: 0.75em;
   }
 
   .prose-quiet strong {
     color: var(--color-ink);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .prose-quiet a {
     color: var(--color-clay);
-    text-underline-offset: 3px;
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
   }
 }
 
@@ -145,39 +211,33 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Load-in: a single staggered settle, never a bounce. */
   .settle {
-    animation: settle 0.62s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    animation: settle 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   @keyframes settle {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: none; }
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  @layer base {
-    :root {
-      --color-paper: #16140f;
-      --color-paper-raised: #1e1b16;
-      --color-ink: #f2ece2;
-      --color-ink-soft: #b4aa9c;
-      --color-ink-faint: #857c6f;
-      --color-rule: #332e26;
-      --color-rule-soft: #262119;
-      --color-clay: #d98e77;
-      --color-clay-soft: #b06a53;
-      --color-sage: #8fae87;
-      --color-amber: #d0a95c;
-    }
   }
 }
